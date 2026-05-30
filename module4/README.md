@@ -10,6 +10,12 @@ This module builds on Module 3 (UART protocol + RTL + basic testbench):
 - **UVM testbench**: UART agent — transaction, sequence, driver, monitor, scoreboard; loopback TX→RX; directed sequence (e.g. 0x00, 0x01, 0x55, 0xAA, 0xFF).
 - **Toolchain**: Verilator + UVM_HOME + Make (same as Module 2).
 
+## How to learn this module
+
+1. Read [docs/MODULE4.md](../docs/MODULE4.md) and [docs/UART_LEARNING_GUIDE.md](../docs/UART_LEARNING_GUIDE.md).
+2. Complete Module 3 `uart_baseline` first.
+3. Run [EXAMPLES.md](EXAMPLES.md), then review [media/module4/slides.pptx](../media/module4/slides.pptx).
+
 ## Links
 
 - **Full module doc**: [docs/MODULE4.md](../docs/MODULE4.md)

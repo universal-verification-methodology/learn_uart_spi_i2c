@@ -96,6 +96,36 @@ Module 7 is the I²C **protocol + RTL + basic testbench** module (UVM comes in M
 
 ---
 
+## Key files to study
+
+- `module7/examples/i2c_baseline/dut/i2c_master.v` — START/addr/data/STOP FSM
+- `module7/examples/i2c_baseline/top_i2c_baseline.sv` — stimulus + inline bus monitor
+- `docs/I2C_LEARNING_GUIDE.md` — protocol reference
+
+## Key Concepts
+
+### 1. Two-wire bus
+
+- SCL + SDA; START/STOP when SCL is high; data changed when SCL is low (simplified model).
+
+### 2. Address + data phases
+
+- 8 bits address+R/W (MSB first), then 8 bits data — monitor both separately.
+
+## Common Pitfalls
+
+1. **Ignoring START detection**
+   - **Mistake**: Sampling bits before a valid START condition.
+   - **Correct**: Detect SDA 1→0 while SCL high, then sample on rising SCL.
+   - **Why**: Reconstructed bytes align to wrong frame boundary.
+
+2. **Expecting full-spec ACK**
+   - **Mistake**: Assuming teaching RTL models open-drain ACK/NACK.
+   - **Correct**: Treat baseline as sequencing practice; ACK comes in extensions.
+   - **Why**: Our push-pull teaching DUT simplifies the bus.
+
+---
+
 ## Topics Covered
 
 ### 1. I²C Protocol Essentials
@@ -115,6 +145,19 @@ Module 7 is the I²C **protocol + RTL + basic testbench** module (UVM comes in M
 ---
 
 ## Example: i2c_baseline
+
+#### Example 7.1: I²C baseline master (`module7/examples/i2c_baseline/`)
+
+**What it demonstrates:**
+
+- I²C master FSM: START → address+W → data → STOP
+- Inline bus monitor sampling SDA on rising SCL
+- Comparing reconstructed address and data bytes to stimulus
+
+```bash
+cd module7/examples/i2c_baseline
+make run
+```
 
 | Component | Role |
 |-----------|------|

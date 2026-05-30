@@ -1,57 +1,25 @@
-# Module 2 Examples
+# Module 2 — Hands-on labs
 
-Hands-on examples for **basic testbench → UVM+SV** and toolchain (Verilator, UVM_HOME, Make).
+Generated from `docs/MODULE2.md` for slides, PDF, and video.
+Run commands from the **course repository root** unless noted.
 
----
+**Course topic:** Design & Verification Methodology (Part 2)
 
-## 1. UVM smoke test (`examples/uvm_smoke/`)
+## 1. UVM smoke test (`uvm_smoke/`)
 
-A minimal **UVM test** that compiles and runs on Verilator: tiny DUT (simple register) + full UVM structure (transaction, sequence, driver, monitor, scoreboard).
+**Source:** `module2/examples/uvm_smoke/`
 
-**Run it** (from repo root):
+**What you'll learn:**
+- UVM transaction, sequence, driver, monitor, and scoreboard on a tiny register DUT
+- How objections start and end the test in `run_phase`
+- Interpreting DRIVER / MONITOR / SCOREBOARD messages and match counts
 
-```bash
-cd module2/examples/uvm_smoke
-make SIM=verilator TEST=test_uvm_smoke
-```
-
-Or use the module script:
-
-```bash
-./scripts/module2.sh --run
-```
-
-**What you'll see**:
-
-- UVM phases and reporting (DRIVER, MONITOR, SCOREBOARD messages).
-- Directed sequence: a few data values (0x00, 0x01, 0x55, 0xAA, 0xFF) driven and checked.
-- Final scoreboard summary (matches/mismatches).
-
-See [examples/uvm_smoke/README.md](examples/uvm_smoke/README.md) for layout and prerequisites.
-
----
-
-## 2. (Reference) UVM examples in tools
-
-This repo also includes UVM-on-Verilator demos you can run directly:
-
-**UVM class hierarchy**:
+**Run:**
 
 ```bash
-cd tools/learn_uvm2017_sv_verilator/module3/examples/class_hierarchy
-verilator -sv --cc --exe --timing --trace \
-  -I"$UVM_HOME/src" +incdir+"$UVM_HOME/src" +define+UVM_NO_DPI \
-  --binary "$UVM_HOME/src/uvm_pkg.sv" class_hierarchy.sv class_hierarchy.cpp \
-  --top-module class_hierarchy
-make -C obj_dir -f Vclass_hierarchy.mk
-./obj_dir/Vclass_hierarchy
+cd module2/examples/uvm_smoke && make SIM=verilator TEST=test_uvm_smoke
 ```
 
-**UVM phases**:
+**You should see:** SCOREBOARD
 
-```bash
-cd tools/learn_uvm2017_sv_verilator/module3/examples/phases
-# (similar Verilator command; see that directory's README)
-```
-
-These show the same toolchain (Verilator + UVM) used in `uvm_smoke`.
+**Go deeper:** Read the full walkthrough in `docs/MODULE2.md` and explore `module2/examples/uvm_smoke/`.

@@ -97,6 +97,36 @@ Module 8 builds on Module 7 (I²C protocol + RTL + basic testbench):
 
 ---
 
+## Key files to study
+
+- `module8/examples/i2c_uvm/dut/i2c_master.v` — reused from Module 7
+- `module8/examples/i2c_uvm/test_i2c_uvm.sv` — I2cMonitor + two-field scoreboard
+- `docs/LEARNING_GUIDE_PROTOCOLS_AND_UVM.md` — § 8 I²C UVM mapping
+
+## Key Concepts
+
+### 1. Two-phase scoreboard
+
+- Compare `observed_addr` and `observed_data` separately from one transaction.
+
+### 2. Course capstone
+
+- Same UVM skeleton as UART/SPI; only monitor protocol rules differ.
+
+## Common Pitfalls
+
+1. **Merging address and data checks**
+   - **Mistake**: One expected byte for the whole transaction.
+   - **Correct**: Separate expected/observed for address+W and data phases.
+   - **Why**: Off-by-one bit in address can hide behind a correct data byte.
+
+2. **Skipping baseline Module 7**
+   - **Mistake**: Jumping to UVM without understanding inline bus monitor logic.
+   - **Correct**: Run i2c_baseline first; then map monitor to I2cMonitor.
+   - **Why**: UVM monitor is the same idea in a reusable component.
+
+---
+
 ## Topics Covered
 
 ### 1. I²C protocol recap
@@ -110,6 +140,19 @@ Module 8 builds on Module 7 (I²C protocol + RTL + basic testbench):
 ---
 
 ## Example: i2c_uvm
+
+#### Example 8.1: I²C UVM agent (`module8/examples/i2c_uvm/`)
+
+**What it demonstrates:**
+
+- I²C DUT from Module 7 with UVM agent and two-phase scoreboard (addr + data)
+- `I2cMonitor` reuses baseline bus-sampling ideas in reusable form
+- Course capstone: compare UART, SPI, and I²C verification patterns
+
+```bash
+cd module8/examples/i2c_uvm
+make SIM=verilator TEST=test_i2c_uvm
+```
 
 | Component | Role |
 |-----------|------|

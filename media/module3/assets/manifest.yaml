@@ -17,6 +17,7 @@ assets:
   generator: render_diagrams.sh
   slides:
   - 9
+  - 12
   license: learn_uart_spi_i2c course materials
 - id: verification_architecture
   type: diagram
@@ -25,6 +26,7 @@ assets:
   generator: render_diagrams.sh
   slides:
   - 10
+  - 13
   license: learn_uart_spi_i2c course materials
 - id: testing_methods
   type: diagram
@@ -32,7 +34,11 @@ assets:
   source: assets/diagrams/testing_methods.mmd
   generator: render_diagrams.sh
   slides:
-  - 15
+  - 11
+  - 26
+  - 27
+  - 28
+  - 39
   license: learn_uart_spi_i2c course materials
 - id: module3_check
   type: screenshot
@@ -40,13 +46,12 @@ assets:
   capture_command: ./scripts/module3.sh --help
   cwd: .
   slides:
-  - 26
-  expect_stdout_contains: Module
-- id: uart_baseline
+  - 46
+  expect_stdout_contains: All required checks for Module 3 passed
+- id: ex01_uart_baseline
   type: screenshot
-  file: assets/screenshots/ex01_examples/uart_baseline.png
-  capture_command: ./scripts/module3.sh --run
+  file: assets/screenshots/ex01_uart_baseline.png
+  capture_command: cd module3/examples/uart_baseline && make run
   cwd: .
   slides:
-  - 29
-  expect_stdout_contains: UART baseline test PASS
+  - 48

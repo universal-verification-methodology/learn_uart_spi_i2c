@@ -10,6 +10,12 @@ This module builds on Module 5 (SPI protocol + RTL + basic testbench):
 - **UVM testbench**: SPI agent — transaction, sequence, driver, monitor, scoreboard; directed sequence (e.g. 0x00, 0x01, 0x55, 0xAA, 0xFF); monitor observes MOSI and scoreboard checks expected vs observed.
 - **Toolchain**: Verilator + UVM_HOME + Make (same as Module 2).
 
+## How to learn this module
+
+1. Read [docs/MODULE6.md](../docs/MODULE6.md) and [docs/SPI_LEARNING_GUIDE.md](../docs/SPI_LEARNING_GUIDE.md) (UVM mapping § 7).
+2. Complete Module 5 `spi_baseline` first.
+3. Run [EXAMPLES.md](EXAMPLES.md), then review [media/module6/slides.pptx](../media/module6/slides.pptx).
+
 ## Links
 
 - **Full module doc**: [docs/MODULE6.md](../docs/MODULE6.md)

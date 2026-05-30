@@ -8,6 +8,9 @@ slides:
 - type: title
   title: Module 3
   subtitle: UART — Protocol + RTL + Basic Testbench
+  narration: Welcome to module 3, UART — Protocol + RTL + Basic Testbench. In this
+    module you will understand the uart protocol (8n1, baud), translate it to rtl
+    (tx, rx, baud gen), and verify with a basic (non-uvm) directed testbench..
 - type: bullets
   title: Learning objectives
   bullets:
@@ -16,89 +19,403 @@ slides:
   - 'RTL architecture: TX (parallel→serial, shift per baud_tick), RX (start detect,
     sample, data_valid), baud_gen (divider).'
   - 'Basic TB: Loopback, directed stimulus, and checking without UVM.'
+  narration: 'Here is what you will learn in this module. UART 8N1: Start bit (0),
+    8 data bits (LSB first), stop bit (1); idle high. Baud rate: Role of a baud generator
+    (clock divider → baud_tick). RTL architecture: TX (parallel→serial, shift per
+    baud_tick), RX (start detect, sample, data_valid), baud_gen (divider). Basic TB:
+    Loopback, directed stimulus, and checking without UVM.'
 - type: bullets
   title: Prerequisites
   bullets:
   - Module 1 (spec → RTL) and Module 2 (basic TB → UVM, toolchain).
   - Verilator, Make, C++ compiler. No UVM required for the uart_baseline example.
+  narration: Before you start, make sure you have these prerequisites. Module 1 (spec
+    → RTL) and Module 2 (basic TB → UVM, toolchain). Verilator, Make, C++ compiler.
+    No UVM required for the uart_baseline example.
 - type: image
   title: Learning path
   image: assets/diagrams/learning_path.png
   caption: Understand the UART protocol (8N1, baud), translate it to RTL (TX, RX,
     baud gen), and verify with a **basic** (non-UVM) directed testbench.
+  narration: Learning path. Understand the UART protocol (8N1, baud), translate it
+    to RTL (TX, RX, baud gen), and verify with a basic (non-UVM) directed testbench.
 - type: bullets
   title: Overview
   bullets:
   - 'Module 3 is the first **protocol** module:'
+  narration: 'Overview. Module 3 is the first protocol module:'
 - type: section
   title: How to learn this module
+  narration: 'Next section: How to learn this module.'
 - type: bullets
   title: Suggested learning path
   bullets:
   - 'Read the detailed UART learning guide: UART_LEARNING_GUIDE.md — what UART is,
-    what kind of protocol (serial, asynchronous, point-to-point), how it works (frame
-    format, baud rate, TX/RX), timing, and where it’s used.'
+    what kind of protocol (serial, asynchronous...'
   - 'Read the protocols + UVM overview: LEARNING_GUIDE_PROTOCOLS_AND_UVM.md — Part
-    B § 4. When to Use Baseline vs UVM (why we start with a baseline testbench before
-    UVM).'
+    B § 4. When to Use Baseline vs UVM (why we start with a...'
   notes: From docs/MODULE3.md — read guides before running demos.
+  narration: 'Follow this learning path. Read the guides before running the labs.
+    Read the detailed UART learning guide: UART_LEARNING_GUIDE.md — what UART is,
+    what kind of protocol (serial, asynchronous... Read the protocols + UVM overview:
+    LEARNING_GUIDE_PROTOCOLS_AND_UVM.md — Part B § 4. When to Use Baseline vs UVM
+    (why we start with a... From docs/MODULE3.md — read guides before running demos.'
 - type: section
   title: Design architecture
-- type: image
-  title: RTL / block architecture
-  image: assets/diagrams/rtl_architecture.png
-  caption: 'Module 3: DUT / block hierarchy (see module3/examples/).'
-- type: image
-  title: Verification environment architecture
-  image: assets/diagrams/verification_architecture.png
-  caption: 'Module 3: UVM layers, agents, and checkers for this phase.'
-- type: bullets
+  narration: 'Next section: Design architecture.'
+- type: two_column
   title: 1. Block hierarchy
-  bullets:
+  left:
   - top_uart_baseline → `baud_gen`, `uart_tx`, `uart_rx`; sim_main.cpp drives `clk`/`rst_n`
     only.
   - 'Loopback: `assign rx = tx` — one wire connects transmitter to receiver.'
+  right: assets/diagrams/rtl_architecture.png
   notes: From MODULE3 Design Architecture.
-- type: bullets
+  narration: '1. Block hierarchy. top_uart_baseline → baud_gen, uart_tx, uart_rx;
+    sim_main.cpp drives clk/rst_n only. Loopback: assign rx = tx — one wire connects
+    transmitter to receiver. Refer to the diagram on the right.'
+- type: two_column
   title: 2. RTL blocks
-  bullets:
+  left:
   - 'baud_gen: `DIVIDER` → `baud_tick` every N clocks; shared by TX and RX.'
   - 'uart_tx: parallel-in / serial-out; start + 8 data (LSB first) + stop; `busy`
     during frame.'
   - 'uart_rx: start detect, sample per `baud_tick`, `data_valid` + optional `framing_error`.'
+  right: assets/diagrams/verification_architecture.png
   notes: From MODULE3 Design Architecture.
-- type: bullets
+  narration: '2. RTL blocks. baud_gen: DIVIDER → baud_tick every N clocks; shared
+    by TX and RX. uart_tx: parallel-in / serial-out; start + 8 data (LSB first) +
+    stop; busy during frame. uart_rx: start detect, sample per baud_tick, data_valid
+    + optional framing_error. Refer to the diagram on the right.'
+- type: two_column
   title: 3. Timing and clocking
-  bullets:
+  left:
   - Single `clk` domain; async `rst_n`; all bit times referenced to `baud_tick`.
+  right: assets/diagrams/testing_methods.png
   notes: From MODULE3 Design Architecture.
+  narration: 3. Timing and clocking. Single clk domain; async rst_n; all bit times
+    referenced to baud_tick. Refer to the diagram on the right.
+- type: image
+  title: RTL block diagram (reference)
+  image: assets/diagrams/rtl_architecture.png
+  caption: 'Module 3: DUT hierarchy and signal flow.'
+  narration: 'RTL block diagram (reference). Module 3: DUT hierarchy and signal flow.'
+- type: image
+  title: Verification / testbench diagram (reference)
+  image: assets/diagrams/verification_architecture.png
+  caption: 'Module 3: stimulus, observation, and checking.'
+  narration: 'Verification / testbench diagram (reference). Module 3: stimulus, observation,
+    and checking.'
+- type: code
+  title: uart_tx — 8N1 frame FSM
+  language: systemverilog
+  source_file: module3/examples/uart_baseline/dut/uart_tx.v
+  code: "// Simple UART transmitter (8N1, no parity) for teaching.\n// This version\
+    \ uses an external baud_tick enable (from baud_gen)\n// so that each bit lasts\
+    \ many clk cycles in real time, while the\n// internal state machine still advances\
+    \ once per baud_tick.\n\n`timescale 1ns/1ps\n\nmodule uart_tx (\n    input  wire\
+    \       clk,\n    input  wire       rst_n,      // Active-low async reset\n  \
+    \  input  wire       baud_tick,  // One-cycle pulse at baud rate\n    input  wire\
+    \       start,      // Pulse high for one cycle to start transmit\n    input \
+    \ wire [7:0] data_in,    // Byte to transmit, LSB first on the line\n    output\
+    \ reg        tx,         // UART TX line (idle high)\n    output reg        busy\
+    \        // High while frame is in progress\n);\n    // 10 bits total: 1 start\
+    \ (0), 8 data, 1 stop (1)\n    localparam int FRAME_BITS = 10;\n\n    reg [FRAME_BITS-1:0]\
+    \ shift_reg;\n    reg [3:0]            bit_idx; // counts 0..9\n\n    always @(posedge\
+    \ clk or negedge rst_n) begin\n        if (!rst_n) begin\n            tx     \
+    \   <= 1'b1;           // idle high\n            busy      <= 1'b0;\n        \
+    \    shift_reg <= {FRAME_BITS{1'b1}};\n            bit_idx   <= 4'd0;\n// ..."
+  narration: uart_tx — 8N1 frame FSM. Review the code on screen and match it to files
+    in the repository.
+- type: code
+  title: uart_rx — start detect & sample
+  language: systemverilog
+  source_file: module3/examples/uart_baseline/dut/uart_rx.v
+  code: "// Simple UART receiver (8N1, no parity) for teaching.\n// This version uses\
+    \ an external baud_tick enable (from baud_gen)\n// so that each bit lasts many\
+    \ clk cycles in real time, while the\n// RX state machine advances once per baud_tick.\n\
+    //\n// Protocol:\n//   - Idle line is high.\n//   - Start bit is a single low\
+    \ bit.\n//   - 8 data bits follow, LSB first, one per clock.\n//   - Stop bit\
+    \ is a single high bit.\n//\n// This RX block watches the serial line for a start\
+    \ bit, then samples\n// one bit per clock to reconstruct the byte. When a full\
+    \ frame has\n// been received, it pulses `data_valid` for one cycle with `data_out`.\n\
+    \n`timescale 1ns/1ps\n\nmodule uart_rx (\n    input  wire       clk,\n    input\
+    \  wire       rst_n,       // Active-low async reset\n    input  wire       baud_tick,\
+    \   // One-cycle pulse at baud rate\n    input  wire       rx,          // UART\
+    \ RX line (idle high)\n    output reg  [7:0] data_out,    // Reconstructed byte\n\
+    \    output reg        data_valid,  // One-cycle pulse when data_out is valid\n\
+    \    output reg        framing_error// High for one cycle when stop bit is bad\n\
+    );\n    // 10 bits total in a frame: 1 start, 8 data, 1 stop\n    localparam int\
+    \ FRAME_BITS = 10;\n// ..."
+  narration: uart_rx — start detect & sample. Review the code on screen and match
+    it to files in the repository.
+- type: code
+  title: baud_gen — divider → baud_tick
+  language: systemverilog
+  source_file: module3/examples/uart_baseline/dut/baud_gen.v
+  code: "// Simple baud-rate generator for teaching.\n// Divides the input clock down\
+    \ to a 1-cycle-wide baud_tick pulse.\n//\n// Example: For a 50 MHz system clock\
+    \ and 115200 baud target,\n// DIVIDER ≈ 50_000_000 / 115200 ≈ 434.\n\n`timescale\
+    \ 1ns/1ps\n\nmodule baud_gen #(\n    parameter int DIVIDER = 434  // Default divider,\
+    \ can be overridden\n) (\n    input  wire clk,\n    input  wire rst_n,      //\
+    \ Active-low async reset\n    output reg  baud_tick   // One-cycle pulse at baud\
+    \ rate\n);\n    int count;\n\n    always @(posedge clk or negedge rst_n) begin\n\
+    \        if (!rst_n) begin\n            count     <= 0;\n// ..."
+  narration: baud_gen — divider → baud_tick. Review the code on screen and match it
+    to files in the repository.
+- type: section
+  title: Execution & simulation flow
+  narration: 'Next section: Execution & simulation flow.'
+- type: bullets
+  title: How the example runs (toolchain)
+  bullets:
+  - 'Makefile: Verilator compiles RTL + SystemVerilog testbench into a C++ model'
+  - 'sim_main.cpp: generates clk/rst_n, calls eval() until $finish'
+  - 'Directed test (initial block or C++): drive stimulus, wait for DUT flags'
+  - 'Self-check: compare outputs; print PASS/FAIL (see terminal demo slide)'
+  - 'Repo path: module3/examples/<example>/ — run make run from that directory'
+  notes: From MODULE3 — execution and artifact layout.
+  narration: 'How the example runs (toolchain). Match each bullet to files in the
+    repository. Makefile: Verilator compiles RTL + SystemVerilog testbench into a
+    C++ model sim_main.cpp: generates clk/rst_n, calls eval() until $finish Directed
+    test (initial block or C++): drive stimulus, wait for DUT flags Self-check: compare
+    outputs; print PASS/FAIL (see terminal demo slide) Repo path...'
+- type: bullets
+  title: Example directory layout
+  bullets:
+  - 'dut/: uart_tx.v, uart_rx.v, baud_gen.v'
+  - 'top_uart_baseline.sv: Loopback (rx=tx), baud_gen, uart_tx, uart_rx; directed
+    test in initial block'
+  - 'sim_main.cpp: Clock, reset; run until $finish'
+  notes: Match each path to files under module/examples/.
+  narration: 'Example directory layout. Match each bullet to files in the repository.
+    dut/: uart_tx.v, uart_rx.v, baud_gen.v top_uart_baseline.sv: Loopback (rx=tx),
+    baud_gen, uart_tx, uart_rx; directed test in initial block sim_main.cpp: Clock,
+    reset; run until $finish Match each path to files under module/examples/.'
+- type: bullets
+  title: Directed test execution sequence (1)
+  bullets:
+  - wait(rst_n)
+  - pulse start/data_in
+  - wait(!busy)
+  - wait(data_valid)
+  - compare data_out
+  notes: Follow this order when tracing waveforms or debugging.
+  narration: This section explains how the example is built and executed in simulation.
+    wait(rst_n) pulse start/data_in wait(!busy) wait(data_valid) compare data_out
+    Follow this order when tracing waveforms or debugging.
+- type: bullets
+  title: Directed test execution sequence (2)
+  bullets:
+  - repeat
+  - $finish.
+  notes: Follow this order when tracing waveforms or debugging.
+  narration: This section explains how the example is built and executed in simulation.
+    repeat $finish. Follow this order when tracing waveforms or debugging.
+- type: code
+  title: Makefile — uart_baseline run
+  language: text
+  source_file: module3/examples/uart_baseline/Makefile
+  code: '# Makefile for Module 3 UART baseline (basic testbench, no UVM)
+
+    #
+
+    # Usage:
+
+    #   make run
+
+    #
+
+
+    VERILATOR ?= verilator
+
+    TOPLEVEL ?= top_uart_baseline
+
+    DUT_SRC = dut/*.v
+
+    RTL_SRC = top_uart_baseline.sv $(DUT_SRC)
+
+    HARNESS = sim_main.cpp
+
+
+    VERILATOR_FLAGS = -sv --timing -Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-WIDTHTRUNC
+
+
+    .PHONY: run compile clean
+
+
+    // ...'
+  narration: Makefile — uart_baseline run. Review the code on screen and match it
+    to files in the repository.
+- type: section
+  title: Key files to study
+  narration: 'Next section: Key files to study.'
+- type: bullets
+  title: Open these in the repo
+  bullets:
+  - '`module3/examples/uart_baseline/dut/baud_gen.v` — divider → `baud_tick`'
+  - '`module3/examples/uart_baseline/dut/uart_tx.v` — 8N1 transmit'
+  - '`module3/examples/uart_baseline/dut/uart_rx.v` — receive and `data_valid`'
+  - '`module3/examples/uart_baseline/top_uart_baseline.sv` — loopback + directed test'
+  - '`docs/UART_LEARNING_GUIDE.md` — protocol reference'
+  notes: Trace while running module3/EXAMPLES.md labs.
+  narration: Open these in the repo. module3/examples/uart_baseline/dut/baud_gen.v
+    — divider → baud_tick module3/examples/uart_baseline/dut/uart_tx.v — 8N1 transmit
+    module3/examples/uart_baseline/dut/uart_rx.v — receive and data_valid module3/examples/uart_baseline/top_uart_baseline.sv
+    — loopback + directed test docs/UART_LEARNING_GUIDE.md — protocol reference Trace
+    while running module3/EXAMPLES.md labs.
 - type: section
   title: Verification & testing methods
-- type: image
-  title: Testing and closure flow
-  image: assets/diagrams/testing_methods.png
-  caption: 'Module 3: how tests, checks, and metrics close verification goals.'
-- type: bullets
+  narration: 'Next section: Verification & testing methods.'
+- type: two_column
   title: 1. Verification goals
-  bullets:
+  left:
   - Prove RTL implements UART 8N1 before UVM (Module 4).
   - 'Happy-path loopback: bytes sent on TX appear correctly on RX.'
+  right: assets/diagrams/testing_methods.png
   notes: From MODULE3 Verification & Testing Methods.
-- type: bullets
+  narration: '1. Verification goals. Prove RTL implements UART 8N1 before UVM (Module
+    4). Happy-path loopback: bytes sent on TX appear correctly on RX. Refer to the
+    diagram on the right.'
+- type: two_column
   title: 2. Baseline directed test
-  bullets:
+  left:
   - 'Stimulus: `initial` block — `start`, `data_in` (0x55, 0xAA).'
   - 'Check: `wait(data_valid)`; compare `data_out`; `$error` / `$display`.'
   - 'No UVM: pin wiggling only — fastest way to learn the protocol on real RTL.'
+  right: assets/diagrams/testing_methods.png
   notes: From MODULE3 Verification & Testing Methods.
-- type: bullets
+  narration: '2. Baseline directed test. Stimulus: initial block — start, data_in
+    (0x55, 0xAA). Check: wait(data_valid); compare data_out; $error / $display. No
+    UVM: pin wiggling only — fastest way to learn the protocol on real RTL. Refer
+    to the diagram on the right.'
+- type: two_column
   title: 3. Coverage gaps (defer to Module 4)
-  bullets:
+  left:
   - Random baud, framing errors, `busy` back-to-back, functional coverage.
   - Map checks to [UART_LEARNING_GUIDE.md](UART_LEARNING_GUIDE.md) spec bullets.
+  right: assets/diagrams/testing_methods.png
   notes: From MODULE3 Verification & Testing Methods.
+  narration: 3. Coverage gaps (defer to Module 4). Random baud, framing errors, busy
+    back-to-back, functional coverage. Map checks to UART_LEARNING_GUIDE.md spec bullets.
+    Refer to the diagram on the right.
+- type: code
+  title: Loopback directed test
+  language: systemverilog
+  source_file: module3/examples/uart_baseline/top_uart_baseline.sv
+  code: "    // Basic directed test: wait for reset release, send bytes, check RX\n\
+    \    initial begin\n        start   = 1'b0;\n        data_in = 8'h00;\n\n    \
+    \    wait (rst_n === 1'b1);\n        repeat (10) @(posedge clk);\n\n        //\
+    \ Send 0x55\n        @(posedge clk);\n        start   = 1'b1;\n        data_in\
+    \ = 8'h55;\n        @(posedge clk);\n        start   = 1'b0;\n        wait (busy\
+    \ === 1'b0);\n        wait (data_valid === 1'b1);\n        if (data_out !== 8'h55)\
+    \ $error(\"UART baseline: expected 0x55, got 0x%02h\", data_out);\n        else\
+    \ $display(\"[PASS] UART baseline: 0x55 loopback OK\");\n\n        repeat (20)\
+    \ @(posedge clk);\n\n        // Send 0xAA\n// ..."
+  narration: Loopback directed test. Review the code on screen and match it to files
+    in the repository.
 - type: section
   title: Syllabus topics
+  narration: 'Next section: Syllabus topics.'
+- type: section
+  title: Protocol & design details
+  narration: 'Next section: Protocol & design details.'
+- type: bullets
+  title: 'Detail: UART quick reference (8N1) (1)'
+  bullets:
+  - 'Framing: `idle=1` → `start=0` → 8 data bits (LSB first) → `stop=1`.'
+  - 'Baud math: `DIVIDER = round(clk_hz / baud)`. Example: 50 MHz clock, 115200 baud
+    → divider ≈ 434.'
+  - 'Sampling: Basic design samples once per bit at the `baud_tick`. Production UARTs
+    often oversample (e.g., 8x or 16x) to tolerate clock...'
+  - 'Reset state: Line idles high, TX not busy, RX clears internal shift register,
+    `data_valid` low.'
+  notes: From MODULE3 Topics Covered — protocol/design depth.
+  narration: 'Protocol and design detail: UART quick reference (8N1) (1). Framing:
+    idle=1 → start=0 → 8 data bits (LSB first) → stop=1. Baud math: DIVIDER = round(clk_hz
+    / baud). Example: 50 MHz clock, 115200 baud → divider ≈ 434. Sampling: Basic design
+    samples once per bit at the baud_tick. Production UARTs often oversample (e.g.,
+    8x or 16x) to tolerate clock... Reset state: Line idles high, TX not busy...'
+- type: bullets
+  title: 'Detail: UART quick reference (8N1) (2)'
+  bullets:
+  - 'Errors: `framing_error` when stop bit is not high at expected sample; optional
+    `parity_error` if parity enabled (not used in 8N1 baseline).'
+  notes: From MODULE3 Topics Covered — protocol/design depth.
+  narration: 'Protocol and design detail: UART quick reference (8N1) (2). Errors:
+    framing_error when stop bit is not high at expected sample; optional parity_error
+    if parity enabled (not used in 8N1 baseline). From MODULE3 Topics Covered — protocol/design
+    depth.'
+- type: bullets
+  title: 'Detail: TX design checklist'
+  bullets:
+  - 'Inputs: `clk`, `rst_n`, `baud_tick`, `start`, `data_in[7:0]`.'
+  - 'Outputs: `tx`, `busy`.'
+  - 'Behavior: On `start`, latch `data_in`, drive start bit low, then shift out bits
+    [0:7] each `baud_tick`, then drive stop bit high for one...'
+  - 'Edge cases: Ignore `start` while `busy` (or queue it in a FIFO if you extend
+    the design).'
+  notes: From MODULE3 Topics Covered — protocol/design depth.
+  narration: 'Protocol and design detail: TX design checklist. Inputs: clk, rst_n,
+    baud_tick, start, data_in[7:0]. Outputs: tx, busy. Behavior: On start, latch data_in,
+    drive start bit low, then shift out bits [0:7] each baud_tick, then drive stop
+    bit high for one... Edge cases: Ignore start while busy (or queue it in a FIFO
+    if you extend the design). From MODULE3 Topics Covered — protocol/design depth.'
+- type: bullets
+  title: 'Detail: RX design checklist'
+  bullets:
+  - 'Inputs: `clk`, `rst_n`, `baud_tick`, `rx`.'
+  - 'Outputs: `data_out[7:0]`, `data_valid` (pulse), `framing_error`.'
+  - 'Behavior: Detect falling edge for start; wait one `baud_tick` to sample mid-start;
+    sample 8 bits on successive `baud_tick`s; sample stop...'
+  - 'Robustness options: Add metastability sync on `rx`; add oversampling + majority
+    vote; add `rx_ready`/`rx_valid` handshake if you later...'
+  notes: From MODULE3 Topics Covered — protocol/design depth.
+  narration: 'Protocol and design detail: RX design checklist. Inputs: clk, rst_n,
+    baud_tick, rx. Outputs: data_out[7:0], data_valid (pulse), framing_error. Behavior:
+    Detect falling edge for start; wait one baud_tick to sample mid-start; sample
+    8 bits on successive baud_ticks; sample stop... Robustness options: Add metastability
+    sync on rx; add oversampling + majority vote; add rx_ready/rx_valid handshake...'
+- type: bullets
+  title: 'Detail: Baud generator notes'
+  bullets:
+  - 'Inputs: `clk`, `rst_n`, `divisor` (constant parameter in the baseline).'
+  - 'Output: `baud_tick` high for one cycle every `divisor` clocks.'
+  - For synthesis, keep the counter simple (`divisor-1` down-counter or up-counter
+    compare). For sim, you can parametrize `divisor` to speed...
+  notes: From MODULE3 Topics Covered — protocol/design depth.
+  narration: 'Protocol and design detail: Baud generator notes. Inputs: clk, rst_n,
+    divisor (constant parameter in the baseline). Output: baud_tick high for one cycle
+    every divisor clocks. For synthesis, keep the counter simple (divisor-1 down-counter
+    or up-counter compare). For sim, you can parametrize divisor to speed... From
+    MODULE3 Topics Covered — protocol/design depth.'
+- type: bullets
+  title: 'Detail: Protocol extensions (not in baseline example) (1)'
+  bullets:
+  - 'Data bits: 5–9 data bits are common.'
+  - 'Parity: Even/odd/mark/space; adds a parity bit before stop.'
+  - 'Stop bits: 1 or 2 stop bits.'
+  - 'Flow control: RTS/CTS hardware pins (outside the serial line) to throttle traffic.'
+  notes: From MODULE3 Topics Covered — protocol/design depth.
+  narration: 'Protocol and design detail: Protocol extensions (not in baseline example)
+    (1). Data bits: 5–9 data bits are common. Parity: Even/odd/mark/space; adds a
+    parity bit before stop. Stop bits: 1 or 2 stop bits. Flow control: RTS/CTS hardware
+    pins (outside the serial line) to throttle traffic. From MODULE3 Topics Covered
+    — protocol/design depth.'
+- type: bullets
+  title: 'Detail: Protocol extensions (not in baseline example) (2)'
+  bullets:
+  - The baseline RTL assumes 8N1 with no parity and no flow control.
+  notes: From MODULE3 Topics Covered — protocol/design depth.
+  narration: 'Protocol and design detail: Protocol extensions (not in baseline example)
+    (2). The baseline RTL assumes 8N1 with no parity and no flow control. From MODULE3
+    Topics Covered — protocol/design depth.'
+- type: image
+  title: Verification flow (reference)
+  image: assets/diagrams/testing_methods.png
+  caption: Stimulus, DUT response, and check points for this module.
+  narration: Verification flow (reference). Stimulus, DUT response, and check points
+    for this module.
 - type: bullets
   title: 1. UART Protocol (8N1) (1/4)
   bullets:
@@ -110,83 +427,155 @@ slides:
   - 'Framing: `idle=1` → `start=0` → 8 data bits (LSB first) → `stop=1`.'
   - 'Baud math: `DIVIDER = round(clk_hz / baud)`. Example: 50 MHz clock, 115200 baud
     → divider ≈ 434.'
-  - 'Reset state: Line idles high, TX not busy, RX clears internal shift register,
-    `data_valid` low.'
+  - 'Sampling: Basic design samples once per bit at the `baud_tick`. Production UARTs
+    often oversample (e.g., 8x or 16x) to tolerate clock...'
   notes: From MODULE3 Topics Covered.
+  narration: '1. UART Protocol (8N1) (1/4). Signals: Serial line (tx/rx), idle high;
+    system clock; baud_tick (one pulse per bit time). Frame: 1 start bit (0), 8 data
+    bits (LSB first), 1 stop bit (1). Timing: One bit per baud_tick; baud_tick derived
+    from system clock via a divider (e.g. DIVIDER = clk_freq / baud_rate). Framing:
+    idle=1 → start=0 → 8 data bits (LSB first) → stop=1. Baud math: DIVIDER =...'
 - type: bullets
   title: 1. UART Protocol (8N1) (2/4)
   bullets:
+  - 'Reset state: Line idles high, TX not busy, RX clears internal shift register,
+    `data_valid` low.'
   - 'Errors: `framing_error` when stop bit is not high at expected sample; optional
     `parity_error` if parity enabled (not used in 8N1 baseline).'
   - 'Inputs: `clk`, `rst_n`, `baud_tick`, `start`, `data_in[7:0]`.'
   - 'Outputs: `tx`, `busy`.'
   - 'Behavior: On `start`, latch `data_in`, drive start bit low, then shift out bits
-    [0:7] each `baud_tick`, then drive stop bit high for one `baud_tick`. Deassert
-    `busy` after stop bit.'
+    [0:7] each `baud_tick`, then drive stop bit high for one...'
   - 'Edge cases: Ignore `start` while `busy` (or queue it in a FIFO if you extend
     the design).'
-  - 'Inputs: `clk`, `rst_n`, `baud_tick`, `rx`.'
   notes: From MODULE3 Topics Covered.
+  narration: '1. UART Protocol (8N1) (2/4). Reset state: Line idles high, TX not busy,
+    RX clears internal shift register, data_valid low. Errors: framing_error when
+    stop bit is not high at expected sample; optional parity_error if parity enabled
+    (not used in 8N1 baseline). Inputs: clk, rst_n, baud_tick, start, data_in[7:0].
+    Outputs: tx, busy. Behavior: On start, latch data_in, drive start bit low, then...'
 - type: bullets
   title: 1. UART Protocol (8N1) (3/4)
   bullets:
+  - 'Inputs: `clk`, `rst_n`, `baud_tick`, `rx`.'
   - 'Outputs: `data_out[7:0]`, `data_valid` (pulse), `framing_error`.'
+  - 'Behavior: Detect falling edge for start; wait one `baud_tick` to sample mid-start;
+    sample 8 bits on successive `baud_tick`s; sample stop...'
   - 'Robustness options: Add metastability sync on `rx`; add oversampling + majority
-    vote; add `rx_ready`/`rx_valid` handshake if you later connect to a FIFO.'
+    vote; add `rx_ready`/`rx_valid` handshake if you later...'
   - 'Inputs: `clk`, `rst_n`, `divisor` (constant parameter in the baseline).'
   - 'Output: `baud_tick` high for one cycle every `divisor` clocks.'
-  - For synthesis, keep the counter simple (`divisor-1` down-counter or up-counter
-    compare). For sim, you can parametrize `divisor` to speed up runs.
-  - 'Data bits: 5–9 data bits are common.'
   notes: From MODULE3 Topics Covered.
+  narration: '1. UART Protocol (8N1) (3/4). Inputs: clk, rst_n, baud_tick, rx. Outputs:
+    data_out[7:0], data_valid (pulse), framing_error. Behavior: Detect falling edge
+    for start; wait one baud_tick to sample mid-start; sample 8 bits on successive
+    baud_ticks; sample stop... Robustness options: Add metastability sync on rx; add
+    oversampling + majority vote; add rx_ready/rx_valid handshake if you later...'
 - type: bullets
   title: 1. UART Protocol (8N1) (4/4)
   bullets:
+  - For synthesis, keep the counter simple (`divisor-1` down-counter or up-counter
+    compare). For sim, you can parametrize `divisor` to speed...
+  - 'Data bits: 5–9 data bits are common.'
   - 'Parity: Even/odd/mark/space; adds a parity bit before stop.'
   - 'Stop bits: 1 or 2 stop bits.'
   - 'Flow control: RTS/CTS hardware pins (outside the serial line) to throttle traffic.'
   - The baseline RTL assumes 8N1 with no parity and no flow control.
   notes: From MODULE3 Topics Covered.
+  narration: '1. UART Protocol (8N1) (4/4). For synthesis, keep the counter simple
+    (divisor-1 down-counter or up-counter compare). For sim, you can parametrize divisor
+    to speed... Data bits: 5–9 data bits are common. Parity: Even/odd/mark/space;
+    adds a parity bit before stop. Stop bits: 1 or 2 stop bits. Flow control: RTS/CTS
+    hardware pins (outside the serial line) to throttle traffic.'
 - type: bullets
   title: 2. Hands-on testbench (uart_baseline)
   bullets:
   - 'Loopback: Connect TX output to RX input; send bytes from TX, check they appear
     on RX.'
   - 'Directed test: Reset release, send 0x55 and 0xAA, wait for `data_valid`, check
-    `data_out`. Implemented in `top_uart_baseline.sv` (initial block) and C++ (clk,
-    rst_n); no UVM.'
+    `data_out`. Implemented in `top_uart_baseline.sv`...'
   - 'Self-check flow: `wait(rst_n)` → pulse `start`/`data_in` → `wait(!busy)` → `wait(data_valid)`
     → compare `data_out` → repeat → `$finish`.'
   notes: From MODULE3 Topics Covered.
+  narration: '2. Hands-on testbench (uart_baseline). Loopback: Connect TX output to
+    RX input; send bytes from TX, check they appear on RX. Directed test: Reset release,
+    send 0x55 and 0xAA, wait for data_valid, check data_out. Implemented in top_uart_baseline.sv...
+    Self-check flow: wait(rst_n) → pulse start/data_in → wait(!busy) → wait(data_valid)
+    → compare data_out → repeat → $finish.'
 - type: section
   title: Hands-on examples
+  narration: 'Next section: Hands-on examples.'
 - type: demo
   title: Module 3 self-check
   command: ./scripts/module3.sh --help
   screenshot: assets/screenshots/module3_check.png
-  expect_stdout_contains: Module
+  expect_stdout_contains: All required checks for Module 3 passed
   notes: Run from course repository root.
-- type: code
-  title: Exercise scaffold
-  language: bash
-  source_file: scripts/module3.sh
-  code: ./scripts/module3.sh --scaffold
+  narration: Module 3 self-check. Watch the terminal output and confirm you see the
+    expected pass message.
 - type: bullets
-  title: 'Example 1: UART baseline'
+  title: 'Example 1: UART baseline loopback'
   bullets:
-  - '`dut/`: `uart_tx.v`, `uart_rx.v`, `baud_gen.v`'
-  - '`top_uart_baseline.sv`: Top with loopback; directed stimulus and checks in initial
-    blocks.'
-  - '`sim_main.cpp`: C++ harness (clock, reset); simulation runs until `$finish`.'
-  notes: module3/examples/examples/uart_baseline/README.md
+  - UART 8N1 TX/RX RTL with shared `baud_gen`
+  - Loopback wiring (`rx = tx`) and directed bytes 0x55 / 0xAA
+  - Baseline self-check without UVM (wait for `data_valid`, compare `data_out`)
+  notes: module3/examples/uart_baseline/README.md
+  narration: 'Example 1: UART baseline loopback. UART 8N1 TX/RX RTL with shared baud_gen
+    Loopback wiring (rx = tx) and directed bytes 0x55 / 0xAA Baseline self-check without
+    UVM (wait for data_valid, compare data_out) module3/examples/uart_baseline/README.md'
 - type: demo
-  title: 'Demo: UART baseline'
-  command: ./scripts/module3.sh --run
-  screenshot: assets/screenshots/ex01_examples/uart_baseline.png
-  notes: 'Hands-on: module3/examples/examples/uart_baseline/'
-  expect_stdout_contains: UART baseline test PASS
+  title: 'Demo: UART baseline loopback'
+  command: cd module3/examples/uart_baseline && make run
+  screenshot: assets/screenshots/ex01_uart_baseline.png
+  notes: 'Hands-on: module3/examples/uart_baseline/'
+  narration: 'Demo: UART baseline loopback. Watch the terminal output and confirm
+    you see the expected pass message.'
+- type: section
+  title: Key concepts
+  narration: 'Next section: Key concepts.'
+- type: bullets
+  title: 1. Asynchronous serial
+  bullets:
+  - No dedicated clock wire; TX and RX must share the same bit time (`baud_tick`).
+  - Loopback (`rx = tx`) proves TX serialization and RX deserialization together.
+  notes: From MODULE3 Key Concepts.
+  narration: 1. Asynchronous serial. No dedicated clock wire; TX and RX must share
+    the same bit time (baud_tick). Loopback (rx = tx) proves TX serialization and
+    RX deserialization together.
+- type: bullets
+  title: 2. 8N1 frame
+  bullets:
+  - Idle high → start (0) → 8 data bits LSB first → stop (1).
+  - '`busy` on TX; `data_valid` pulse on RX when a byte is ready.'
+  notes: From MODULE3 Key Concepts.
+  narration: 2. 8N1 frame. Idle high → start (0) → 8 data bits LSB first → stop (1).
+    busy on TX; data_valid pulse on RX when a byte is ready.
+- type: section
+  title: Common pitfalls
+  narration: 'Next section: Common pitfalls.'
+- type: bullets
+  title: Mismatched baud timing
+  bullets:
+  - 'Mistake: Different dividers on TX and RX in a loopback test.'
+  - 'Correct: One `baud_gen` drives both (as in uart_baseline).'
+  - 'Why: RX samples at the wrong bit times.'
+  notes: From MODULE3 Common Pitfalls.
+  narration: 'Mismatched baud timing. Mistake: Different dividers on TX and RX in
+    a loopback test. Correct: One baud_gen drives both (as in uart_baseline). Why:
+    RX samples at the wrong bit times.'
+- type: bullets
+  title: Only checking `busy`
+  bullets:
+  - 'Mistake: Assuming success when TX finishes.'
+  - 'Correct: Wait for `data_valid` and compare `data_out` to the sent byte.'
+  - 'Why: `busy` does not prove the loopback byte is correct.'
+  notes: From MODULE3 Common Pitfalls.
+  narration: 'Only checking busy. Mistake: Assuming success when TX finishes. Correct:
+    Wait for data_valid and compare data_out to the sent byte. Why: busy does not
+    prove the loopback byte is correct.'
 - type: section
   title: Practice & assessment
+  narration: 'Next section: Practice & assessment.'
 - type: bullets
   title: What you should know
   bullets:
@@ -195,6 +584,10 @@ slides:
   - Run the uart_baseline example and interpret the loopback test.
   - 'Ready for Module 4: UART UVM+SV verification.'
   notes: From MODULE3 Learning Outcomes.
+  narration: 'By now you should be able to explain the following. Describe UART 8N1
+    frame and baud timing. Explain the role of uart_tx, uart_rx, and baud_gen. Run
+    the uart_baseline example and interpret the loopback test. Ready for Module 4:
+    UART UVM+SV verification. From MODULE3 Learning Outcomes.'
 - type: bullets
   title: Exercises
   bullets:
@@ -202,6 +595,8 @@ slides:
   - Trace one byte
   - Baud and divider
   - 'Optional: Waveforms'
+  narration: 'Exercises. Run uart_baseline Trace one byte Baud and divider Optional:
+    Waveforms'
 - type: bullets
   title: Assessment checklist
   bullets:
@@ -210,6 +605,10 @@ slides:
   - Can explain the role of uart_tx, uart_rx, and baud_gen in the RTL.
   - Can run uart_baseline and interpret the loopback test result.
   - 'Ready for Module 4: UART UVM+SV verification.'
+  narration: 'Assessment checklist. Can describe UART 8N1 (start bit, 8 data LSB first,
+    stop bit) and the role of baud_tick. Can explain the role of uart_tx, uart_rx,
+    and baud_gen in the RTL. Can run uart_baseline and interpret the loopback test
+    result. Ready for Module 4: UART UVM+SV verification.'
 - type: bullets
   title: Summary & next steps
   bullets:
@@ -218,3 +617,9 @@ slides:
   - Complete module3/CHECKLIST.md
   - Review module3/EXAMPLES.md and run each lab
   - 'Next: UART UVM+SV'
+  narration: 'In summary: Understand the UART protocol (8N1, baud), translate it to
+    RTL (TX, RX, baud gen), and verify with a basic (non-UVM) directed testbench.
+    Next up: UART UVM+SV. Understand the UART protocol (8N1, baud), translate it to
+    RTL (TX, RX, baud gen), and verify with a basic (non-UVM) directed testbench.
+    Complete module3/CHECKLIST.md Review module3/EXAMPLES.md and run each lab Next:
+    UART UVM+SV'

@@ -9,6 +9,10 @@ slides:
 - type: title
   title: Module 2
   subtitle: Design & Verification Methodology (Part 2)
+  narration: Welcome to module 2, Design & Verification Methodology (Part 2). In this
+    module you will understand basic testbench patterns (directed tests, pin wiggling),
+    the evolution to a uvm+sv testbench (agents, sequences, drivers, monitors, scoreboards),
+    and the toolchain (verilator, uvm_home, make)..
 - type: bullets
   title: Learning objectives
   bullets:
@@ -18,6 +22,11 @@ slides:
     scoreboard, agent, env, test.'
   - 'Toolchain: UVM_HOME, include paths, Verilator flags (`-sv`, `--timing`, `--trace`),
     and `make SIM=verilator TEST=...`.'
+  narration: 'Here is what you will learn in this module. Basic TB vs UVM: From “wiggle
+    pins and check” to “transaction → sequence → driver/monitor → scoreboard.” UVM
+    building blocks: Transaction (sequence item), sequence, driver, monitor, scoreboard,
+    agent, env, test. Toolchain: UVM_HOME, include paths, Verilator flags (-sv, --timing,
+    --trace), and make SIM=verilator TEST=....'
 - type: bullets
   title: Prerequisites
   bullets:
@@ -26,18 +35,28 @@ slides:
   - GNU Make and C++ compiler
   - 'UVM: UVM_HOME set (must contain `src/uvm_pkg.sv`) or vendored UVM in the repo
     (see uvm_smoke Makefile)'
+  narration: 'Before you start, make sure you have these prerequisites. Module 1 completed
+    (spec → RTL flow, spec_to_rtl example run). Verilator (5.036+) GNU Make and C++
+    compiler UVM: UVM_HOME set (must contain src/uvm_pkg.sv) or vendored UVM in the
+    repo (see uvm_smoke Makefile)'
 - type: image
   title: Learning path
   image: assets/diagrams/learning_path.png
   caption: Understand basic testbench patterns (directed tests, pin wiggling), the
     evolution to a UVM+SV testbench (agents, sequences, drivers, monitors, scoreboards),
     and the toolchain (Verilator, UVM_HOME, Make).
+  narration: Learning path. Understand basic testbench patterns (directed tests, pin
+    wiggling), the evolution to a UVM+SV testbench (agents, sequences, drivers, monitors,
+    scoreboards), and the toolchain (Verilator, UVM_HOME...
 - type: bullets
   title: Overview
   bullets:
   - 'Module 2 builds on Module 1 (spec → RTL) by focusing on **how we verify**:'
+  narration: 'Overview. Module 2 builds on Module 1 (spec → RTL) by focusing on how
+    we verify:'
 - type: section
   title: How to learn this module
+  narration: 'Next section: How to learn this module.'
 - type: bullets
   title: Suggested learning path
   bullets:
@@ -47,68 +66,227 @@ slides:
   - Run `uvm_smoke` and trace one transaction from sequence → driver → DUT → monitor
     → scoreboard.
   notes: From docs/MODULE2.md — read guides before running demos.
+  narration: Follow this learning path. Read the guides before running the labs. Complete
+    Module 1 — run spec_to_rtl and understand spec → RTL → directed check. Read this
+    module’s Design Architecture and Verification sections before uvm_smoke. Set UVM_HOME
+    (or use vendored UVM under tools/) — see Command Reference. Run uvm_smoke and
+    trace one transaction from sequence → driver → DUT → monitor → scoreboard...
 - type: section
   title: Design architecture
-- type: image
-  title: RTL / block architecture
-  image: assets/diagrams/rtl_architecture.png
-  caption: 'Module 2: DUT / block hierarchy (see module2/examples/).'
-- type: image
-  title: Verification environment architecture
-  image: assets/diagrams/verification_architecture.png
-  caption: 'Module 2: UVM layers, agents, and checkers for this phase.'
-- type: bullets
+  narration: 'Next section: Design architecture.'
+- type: two_column
   title: 1. DUT and interface
-  bullets:
+  left:
   - 'simple_register.v: `enable`, `d`, `q` — minimal storage for learning UVM data
     flow.'
   - 'reg_if: virtual interface bundling `clk`, `rst_n`, `enable`, `d`, `q` for the
     agent.'
+  right: assets/diagrams/rtl_architecture.png
   notes: From MODULE2 Design Architecture.
-- type: bullets
-  title: 2. UVM component hierarchy
-  bullets:
+  narration: '1. DUT and interface. simple_register.v: enable, d, q — minimal storage
+    for learning UVM data flow. reg_if: virtual interface bundling clk, rst_n, enable,
+    d, q for the agent. Refer to the diagram on the right.'
+- type: two_column
+  title: 2. UVM component hierarchy (1/2)
+  left:
   - RegTransaction → one write operation (data + enable + observed q).
   - RegSequence → stream of directed transactions.
   - RegDriver / RegMonitor → drive pins / sample pins each cycle.
   - RegScoreboard → expected queue vs observed.
+  right: assets/diagrams/verification_architecture.png
+  notes: From MODULE2 Design Architecture.
+  narration: 2. UVM component hierarchy (1/2). RegTransaction → one write operation
+    (data + enable + observed q). RegSequence → stream of directed transactions. RegDriver
+    / RegMonitor → drive pins / sample pins each cycle. RegScoreboard → expected queue
+    vs observed. Refer to the diagram on the right.
+- type: bullets
+  title: 2. UVM component hierarchy (2/2)
+  bullets:
   - RegAgent, RegEnv, RegTest — standard UVM layering used again in Modules 4, 6,
     8.
   notes: From MODULE2 Design Architecture.
-- type: bullets
+  narration: 2. UVM component hierarchy (2/2). RegAgent, RegEnv, RegTest — standard
+    UVM layering used again in Modules 4, 6, 8.
+- type: two_column
   title: 3. Build and simulation flow
-  bullets:
+  left:
   - Verilator compiles SV + UVM + C++; `+UVM_TESTNAME` selects the test.
   - 'Phases: build → connect → run (objections hold simulation until sequence completes).'
+  right: assets/diagrams/testing_methods.png
   notes: From MODULE2 Design Architecture.
+  narration: '3. Build and simulation flow. Verilator compiles SV + UVM + C++; +UVM_TESTNAME
+    selects the test. Phases: build → connect → run (objections hold simulation until
+    sequence completes). Refer to the diagram on the right.'
+- type: image
+  title: RTL block diagram (reference)
+  image: assets/diagrams/rtl_architecture.png
+  caption: 'Module 2: DUT hierarchy and signal flow.'
+  narration: 'RTL block diagram (reference). Module 2: DUT hierarchy and signal flow.'
+- type: image
+  title: Verification / testbench diagram (reference)
+  image: assets/diagrams/verification_architecture.png
+  caption: 'Module 2: stimulus, observation, and checking.'
+  narration: 'Verification / testbench diagram (reference). Module 2: stimulus, observation,
+    and checking.'
+- type: code
+  title: RegTransaction — UVM item
+  language: systemverilog
+  source_file: module2/examples/uvm_smoke/test_uvm_smoke.sv
+  code: "/**\n * Module 2: UVM smoke test (Verilator)\n *\n * Purpose:\n * - Provide\
+    \ a *self-contained* UVM test that compiles and runs on Verilator\n * - Demonstrate\
+    \ the core UVM structure used later for UART/SPI/I²C:\n *   transaction → sequence\
+    \ → driver/monitor → scoreboard\n */\n\n`include \"uvm_macros.svh\"\nimport uvm_pkg::*;\n\
+    \n`timescale 1ns/1ps\n\n// -----------------------------------------------------------------------------\n\
+    // Interface\n// -----------------------------------------------------------------------------\n\
+    interface reg_if;\n    logic clk;\n    logic rst_n;\n    logic enable;\n    logic\
+    \ [7:0] d;\n    logic [7:0] q;\nendinterface\n\n// -----------------------------------------------------------------------------\n\
+    // Transaction\n// -----------------------------------------------------------------------------\n\
+    class RegTransaction extends uvm_sequence_item;\n    rand logic [7:0] d;\n   \
+    \ rand bit enable;\n    logic [7:0] observed_q;\n\n    `uvm_object_utils(RegTransaction)\n\
+    \n    function new(string name = \"RegTransaction\");\n        super.new(name);\n\
+    \    endfunction\n\n    function string convert2string();\n        return $sformatf(\"\
+    enable=%0b d=0x%02h observed_q=0x%02h\", enable, d, observed_q);\n    endfunction\n\
+    endclass\n\n// -----------------------------------------------------------------------------\n\
+    // ..."
+  narration: RegTransaction — UVM item. Review the code on screen and match it to
+    files in the repository.
+- type: section
+  title: Execution & simulation flow
+  narration: 'Next section: Execution & simulation flow.'
+- type: bullets
+  title: How the example runs (toolchain)
+  bullets:
+  - 'Makefile: Verilator + UVM_HOME compile RTL, interface, and test_*.sv'
+  - 'UVM phases: build → connect → run_test → report (same pattern as Module 2)'
+  - Sequence → driver → DUT → monitor → scoreboard (read SCOREBOARD at end)
+  - 'Typical command: make SIM=verilator TEST=test_* (see module2 demo slide)'
+  - Loopback / hooks connect monitor observations to scoreboard checks
+  notes: From MODULE2 — execution and artifact layout.
+  narration: 'How the example runs (toolchain). Match each bullet to files in the
+    repository. Makefile: Verilator + UVM_HOME compile RTL, interface, and test_*.sv
+    UVM phases: build → connect → run_test → report (same pattern as Module 2) Sequence
+    → driver → DUT → monitor → scoreboard (read SCOREBOARD at end) Typical command:
+    make SIM=verilator TEST=test_* (see module2 demo slide) Loopback / hooks connect...'
+- type: bullets
+  title: Example directory layout (1)
+  bullets:
+  - 'DUT: dut/simple_register.v — tiny register (clk, rst_n, enable, d, q).'
+  - 'Interface: reg_if — connects testbench to DUT.'
+  - 'Transaction: RegTransaction — data + enable + observed_q.'
+  - 'Sequence: RegSequence — produces 5 directed transactions (0x00, 0x01, 0x55, 0xAA,
+    0xFF).'
+  - 'Driver: RegDriver — drives enable and d from transaction; waits for clock.'
+  notes: Match each path to files under module/examples/.
+  narration: 'Example directory layout (1). Match each bullet to files in the repository.
+    DUT: dut/simple_register.v — tiny register (clk, rst_n, enable, d, q). Interface:
+    reg_if — connects testbench to DUT. Transaction: RegTransaction — data + enable
+    + observed_q. Sequence: RegSequence — produces 5 directed transactions (0x00,
+    0x01, 0x55, 0xAA, 0xFF). Driver: RegDriver — drives enable and d from...'
+- type: bullets
+  title: Example directory layout (2)
+  bullets:
+  - 'Monitor: RegMonitor — samples enable, d, q each cycle; writes transaction to
+    scoreboard.'
+  - 'Scoreboard: RegScoreboard — compares expected vs observed; reports matches/mismatches.'
+  - 'Test: RegTest — builds env, queues expected values, starts sequence, objections.'
+  notes: Match each path to files under module/examples/.
+  narration: 'Example directory layout (2). Match each bullet to files in the repository.
+    Monitor: RegMonitor — samples enable, d, q each cycle; writes transaction to scoreboard.
+    Scoreboard: RegScoreboard — compares expected vs observed; reports matches/mismatches.
+    Test: RegTest — builds env, queues expected values, starts sequence, objections.
+    Match each path to files under module/examples/.'
+- type: code
+  title: Makefile — UVM + Verilator
+  language: text
+  source_file: module2/examples/uvm_smoke/Makefile
+  code: '# Makefile for Module 2 UVM smoke test
+
+    #
+
+    # Mirrors the style used in:
+
+    # - tools/learn_uvm2017_sv_verilator/module3/tests/uvm_tests/Makefile
+
+    #
+
+    # Usage:
+
+    #   make SIM=verilator TEST=test_uvm_smoke
+
+    #
+
+
+    SIM ?= verilator
+
+    TEST ?= test_uvm_smoke
+
+
+    # Prefer an externally-installed UVM, but fall back to the repo''s vendored UVM.
+
+    UVM_HOME ?= $(shell echo $$UVM_HOME)
+
+    # From module2/examples/uvm_smoke, repo root is ../../..
+
+    UVM_HOME_FALLBACK := ../../../tools/uvm-2017/1800.2-2017-1.0
+
+    UVM_HOME_FALLBACK_ALT := ../../../tools/learn_uvm2017_sv_verilator/tools/uvm-2017/1800.2-2017-1.0
+
+
+    // ...'
+  narration: Makefile — UVM + Verilator. Review the code on screen and match it to
+    files in the repository.
+- type: section
+  title: Key files to study
+  narration: 'Next section: Key files to study.'
+- type: bullets
+  title: Open these in the repo
+  bullets:
+  - '`module2/examples/uvm_smoke/dut/simple_register.v` — tiny DUT'
+  - '`module2/examples/uvm_smoke/test_uvm_smoke.sv` — transaction, agent, scoreboard'
+  - '`module2/examples/uvm_smoke/Makefile` — Verilator + UVM build'
+  notes: Trace while running module2/EXAMPLES.md labs.
+  narration: Open these in the repo. module2/examples/uvm_smoke/dut/simple_register.v
+    — tiny DUT module2/examples/uvm_smoke/test_uvm_smoke.sv — transaction, agent,
+    scoreboard module2/examples/uvm_smoke/Makefile — Verilator + UVM build Trace while
+    running module2/EXAMPLES.md labs.
 - type: section
   title: Verification & testing methods
-- type: image
-  title: Testing and closure flow
-  image: assets/diagrams/testing_methods.png
-  caption: 'Module 2: how tests, checks, and metrics close verification goals.'
-- type: bullets
+  narration: 'Next section: Verification & testing methods.'
+- type: two_column
   title: 1. Transaction-level verification
-  bullets:
+  left:
   - Stimulus is a transaction (what to write), not raw pin wiggles in `initial` blocks.
   - The monitor reconstructs what happened on the bus; the scoreboard compares to
     expected.
+  right: assets/diagrams/testing_methods.png
   notes: From MODULE2 Verification & Testing Methods.
-- type: bullets
+  narration: 1. Transaction-level verification. Stimulus is a transaction (what to
+    write), not raw pin wiggles in initial blocks. The monitor reconstructs what happened
+    on the bus; the scoreboard compares to expected. Refer to the diagram on the right.
+- type: two_column
   title: 2. Directed regression in uvm_smoke
-  bullets:
+  left:
   - 'Fixed sequence: 0x00, 0x01, 0x55, 0xAA, 0xFF — repeatable, easy to debug.'
   - 'Pass criteria: scoreboard reports matches, zero mismatches.'
+  right: assets/diagrams/testing_methods.png
   notes: From MODULE2 Verification & Testing Methods.
-- type: bullets
+  narration: '2. Directed regression in uvm_smoke. Fixed sequence: 0x00, 0x01, 0x55,
+    0xAA, 0xFF — repeatable, easy to debug. Pass criteria: scoreboard reports matches,
+    zero mismatches. Refer to the diagram on the right.'
+- type: two_column
   title: 3. Skills you reuse on UART/SPI/I²C
-  bullets:
+  left:
   - Same agent pattern; only the transaction and protocol timing in driver/monitor
     change.
   - 'Read UVM log lines: DRIVER, MONITOR, SCOREBOARD, final summary.'
+  right: assets/diagrams/testing_methods.png
   notes: From MODULE2 Verification & Testing Methods.
+  narration: '3. Skills you reuse on UART/SPI/I²C. Same agent pattern; only the transaction
+    and protocol timing in driver/monitor change. Read UVM log lines: DRIVER, MONITOR,
+    SCOREBOARD, final summary. Refer to the diagram on the right.'
 - type: section
   title: Syllabus topics
+  narration: 'Next section: Syllabus topics.'
 - type: bullets
   title: 1. Basic Testbench (Directed Tests, Pin Wiggling)
   bullets:
@@ -116,12 +294,21 @@ slides:
     and check expected outputs (e.g., register value, count).'
   - 'Pin wiggling: The testbench directly drives and samples DUT pins (clock, reset,
     data, enable) — no transaction layer yet.'
+  - 'Relation to Module 1: The spec_to_rtl example used a C++ harness to drive clk/rst_n/enable
+    and check count; that’s a minimal directed...'
   notes: From MODULE2 Topics Covered.
+  narration: '1. Basic Testbench (Directed Tests, Pin Wiggling). Directed test: Drive
+    specific inputs (e.g., reset, then a fixed sequence of data) and check expected
+    outputs (e.g., register value, count). Pin wiggling: The testbench directly drives
+    and samples DUT pins (clock, reset, data, enable) — no transaction layer yet.
+    Relation to Module 1: The spec_to_rtl example used a C++ harness to drive...'
 - type: bullets
   title: 2. Evolution to UVM+SV Testbench
   bullets:
+  - 'Transaction (`uvm_sequence_item`): Represents “one operation” (e.g., one write
+    to a register: data + enable). The sequence produces...'
   - 'Sequence: Produces a stream of transactions (e.g., a few directed values: 0x00,
-    0x01, 0x55, 0xAA, 0xFF). Can be deterministic (directed) or random (later).'
+    0x01, 0x55, 0xAA, 0xFF). Can be deterministic (directed)...'
   - 'Driver: Gets transactions from the sequencer and drives the DUT interface (e.g.,
     set enable and d on the bus, wait for clock).'
   - 'Monitor: Observes the DUT interface and turns pin activity into transactions,
@@ -129,66 +316,129 @@ slides:
   - 'Scoreboard: Compares “expected” (what we sent) vs “observed” (what the monitor
     saw). Reports matches/mismatches.'
   - 'Agent: Groups driver, monitor, and sequencer for one interface. Env: Contains
-    agent(s) and scoreboard. Test: Builds the env, starts the sequence, raises/drops
-    objections.'
+    agent(s) and scoreboard. Test: Builds the env, starts the...'
   notes: From MODULE2 Topics Covered.
+  narration: '2. Evolution to UVM+SV Testbench. Transaction (uvm_sequence_item): Represents
+    “one operation” (e.g., one write to a register: data + enable). The sequence produces...
+    Sequence: Produces a stream of transactions (e.g., a few directed values: 0x00,
+    0x01, 0x55, 0xAA, 0xFF). Can be deterministic (directed)... Driver: Gets transactions
+    from the sequencer and drives the DUT interface (e.g., set...'
 - type: bullets
   title: 3. Toolchain (Verilator, UVM_HOME, Make)
   bullets:
   - 'Verilator: Compiles SystemVerilog (including UVM) + C++ into an executable. Key
-    flags: `-sv`, `--timing`, `--trace`, `--binary`, include paths for UVM.'
+    flags: `-sv`, `--timing`, `--trace`, `--binary`, include...'
   - 'UVM_HOME: Points to the UVM library root; the build uses `$(UVM_HOME)/src/uvm_pkg.sv`
-    and `+incdir+$(UVM_HOME)/src`. If not set, the uvm_smoke Makefile can fall back
-    to a vendored UVM under `tools/`.'
+    and `+incdir+$(UVM_HOME)/src`. If not set, the...'
   - 'Make: One target to compile (Verilator + make in obj_dir), one to run (`./obj_dir/Vtest_uvm_smoke
-    +UVM_TESTNAME=...`). Same pattern for UART/SPI/I²C UVM tests later.'
+    +UVM_TESTNAME=...`). Same pattern for...'
   notes: From MODULE2 Topics Covered.
+  narration: '3. Toolchain (Verilator, UVM_HOME, Make). Match each bullet to files
+    in the repository. Verilator: Compiles SystemVerilog (including UVM) + C++ into
+    an executable. Key flags: -sv, --timing, --trace, --binary, include... UVM_HOME:
+    Points to the UVM library root; the build uses $(UVM_HOME)/src/uvm_pkg.sv and
+    +incdir+$(UVM_HOME)/src. If not set, the... Make: One target to compile (Verilator
+    +...'
 - type: section
   title: Command reference highlights
+  narration: 'Next section: Command reference highlights.'
 - type: bullets
   title: Environment checks
   bullets:
   - verilator --version
   notes: Full detail in docs/MODULE2.md command reference.
+  narration: Environment checks. verilator --version Full detail in docs/MODULE2.md
+    command reference.
 - type: bullets
   title: Build and run uvm_smoke
   bullets:
   - cd module2/examples/uvm_smoke
   notes: Full detail in docs/MODULE2.md command reference.
+  narration: Build and run uvm_smoke. cd module2/examples/uvm_smoke Full detail in
+    docs/MODULE2.md command reference.
 - type: bullets
   title: Module script (from repo root)
   bullets:
   - './scripts/module2.sh --check   # Environment + UVM + example dirs'
   notes: Full detail in docs/MODULE2.md command reference.
+  narration: 'Module script (from repo root). ./scripts/module2.sh --check # Environment
+    + UVM + example dirs Full detail in docs/MODULE2.md command reference.'
 - type: section
   title: Hands-on examples
+  narration: 'Next section: Hands-on examples.'
 - type: demo
   title: Module 2 self-check
   command: ./scripts/module2.sh --help
   screenshot: assets/screenshots/module2_check.png
-  expect_stdout_contains: Module
+  expect_stdout_contains: All required checks for Module 2 passed
   notes: Run from course repository root.
-- type: code
-  title: Exercise scaffold
-  language: bash
-  source_file: scripts/module2.sh
-  code: ./scripts/module2.sh --scaffold
+  narration: Module 2 self-check. Watch the terminal output and confirm you see the
+    expected pass message.
 - type: bullets
   title: 'Example 1: UVM smoke test'
   bullets:
-  - UVM phases and reporting (DRIVER, MONITOR, SCOREBOARD messages).
-  - 'Directed sequence: a few data values (0x00, 0x01, 0x55, 0xAA, 0xFF) driven and
-    checked.'
-  - Final scoreboard summary (matches/mismatches).
-  notes: module2/examples/examples/uvm_smoke/README.md
+  - UVM transaction, sequence, driver, monitor, and scoreboard on a tiny register
+    DUT
+  - How objections start and end the test in `run_phase`
+  - Interpreting DRIVER / MONITOR / SCOREBOARD messages and match counts
+  notes: module2/examples/uvm_smoke/README.md
+  narration: 'Example 1: UVM smoke test. UVM transaction, sequence, driver, monitor,
+    and scoreboard on a tiny register DUT How objections start and end the test in
+    run_phase Interpreting DRIVER / MONITOR / SCOREBOARD messages and match counts
+    module2/examples/uvm_smoke/README.md'
 - type: demo
   title: 'Demo: UVM smoke test'
-  command: ./scripts/module2.sh --run
-  screenshot: assets/screenshots/ex01_examples/uvm_smoke.png
-  notes: 'Hands-on: module2/examples/examples/uvm_smoke/'
-  expect_stdout_contains: SCOREBOARD
+  command: cd module2/examples/uvm_smoke && make SIM=verilator TEST=test_uvm_smoke
+  screenshot: assets/screenshots/ex01_uvm_smoke.png
+  notes: 'Hands-on: module2/examples/uvm_smoke/'
+  narration: 'Demo: UVM smoke test. Watch the terminal output and confirm you see
+    the expected pass message.'
+- type: section
+  title: Key concepts
+  narration: 'Next section: Key concepts.'
+- type: bullets
+  title: 1. Transaction-level TB
+  bullets:
+  - Stimulus is a transaction (what to do), not raw pin toggles in one big `initial`
+    block.
+  - Driver converts transactions to pin activity; monitor converts pins back to transactions.
+  notes: From MODULE2 Key Concepts.
+  narration: 1. Transaction-level TB. Stimulus is a transaction (what to do), not
+    raw pin toggles in one big initial block. Driver converts transactions to pin
+    activity; monitor converts pins back to transactions.
+- type: bullets
+  title: 2. Scoreboard closure
+  bullets:
+  - Expected queue vs observed values — same pattern for UART/SPI/I²C UVM modules.
+  notes: From MODULE2 Key Concepts.
+  narration: 2. Scoreboard closure. Expected queue vs observed values — same pattern
+    for UART/SPI/I²C UVM modules.
+- type: section
+  title: Common pitfalls
+  narration: 'Next section: Common pitfalls.'
+- type: bullets
+  title: Skipping monitor or scoreboard
+  bullets:
+  - 'Mistake: Only driving the DUT and eyeballing waves.'
+  - 'Correct: Monitor + scoreboard automate expected vs observed.'
+  - 'Why: Scales when you add dozens of tests.'
+  notes: From MODULE2 Common Pitfalls.
+  narration: 'Skipping monitor or scoreboard. Mistake: Only driving the DUT and eyeballing
+    waves. Correct: Monitor + scoreboard automate expected vs observed. Why: Scales
+    when you add dozens of tests.'
+- type: bullets
+  title: UVM_HOME not set
+  bullets:
+  - 'Mistake: Build fails with missing `uvm_pkg.sv`.'
+  - 'Correct: Export UVM_HOME or use vendored UVM under `tools/`.'
+  - 'Why: Compiler cannot find UVM includes.'
+  notes: From MODULE2 Common Pitfalls.
+  narration: 'UVM_HOME not set. Mistake: Build fails with missing uvm_pkg.sv. Correct:
+    Export UVM_HOME or use vendored UVM under tools/. Why: Compiler cannot find UVM
+    includes.'
 - type: section
   title: Practice & assessment
+  narration: 'Next section: Practice & assessment.'
 - type: bullets
   title: What you should know
   bullets:
@@ -202,6 +452,11 @@ slides:
     include paths are needed.'
   - 'Be ready for Module 3: UART protocol + RTL + basic (non-UVM) testbench.'
   notes: From MODULE2 Learning Outcomes.
+  narration: By now you should be able to explain the following. Explain basic testbench
+    (directed tests, pin wiggling) and how it evolves into UVM (transaction, sequence,
+    driver, monitor, scoreboard). Describe the role of transaction, sequence, driver,
+    monitor, scoreboard, agent, env, and test in a UVM testbench. Run the uvm_smoke
+    example (make SIM=verilator TEST=test_uvm_smoke) and interpret UVM output...
 - type: bullets
   title: Exercises
   bullets:
@@ -209,6 +464,8 @@ slides:
   - Traceability
   - Change the sequence
   - 'Optional: Waveforms'
+  narration: 'Exercises. Run uvm_smoke Traceability Change the sequence Optional:
+    Waveforms'
 - type: bullets
   title: Assessment checklist
   bullets:
@@ -217,12 +474,20 @@ slides:
     a UVM test.
   - Can run uvm_smoke and interpret the output.
   - Ready to move to Module 3 (UART protocol + RTL + basic testbench).
+  narration: Assessment checklist. Can explain basic TB vs UVM (transaction, sequence,
+    driver, monitor, scoreboard). Can describe the role of UVM_HOME, Verilator flags,
+    and Make in building/running a UVM test. Can run uvm_smoke and interpret the output.
+    Ready to move to Module 3 (UART protocol + RTL + basic testbench).
 - type: bullets
   title: Summary & next steps
   bullets:
   - Understand basic testbench patterns (directed tests, pin wiggling), the evolution
-    to a UVM+SV testbench (agents, sequences, drivers, monitors, scoreboards), and
-    the toolchain (Verilator, UVM_HOME, Make).
+    to a UVM+SV testbench (agents, sequences, drivers...
   - Complete module2/CHECKLIST.md
   - Review module2/EXAMPLES.md and run each lab
   - 'Next: UART'
+  narration: 'In summary: Understand basic testbench patterns (directed tests, pin
+    wiggling), the evolution to a UVM+SV testbench (agents, sequences, drivers, monitors,
+    scoreboards), and the toolchain (Verilator, UVM_HOME, Make). Next up: UART. Understand
+    basic testbench patterns (directed tests, pin wiggling), the evolution to a UVM+SV
+    testbench (agents, sequences, drivers... Complete module2/CHECKLIST.md...'

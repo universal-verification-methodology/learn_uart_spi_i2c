@@ -109,6 +109,37 @@ Module 2 builds on Module 1 (spec → RTL) by focusing on **how we verify**:
 
 ---
 
+## Key files to study
+
+- `module2/examples/uvm_smoke/dut/simple_register.v` — tiny DUT
+- `module2/examples/uvm_smoke/test_uvm_smoke.sv` — transaction, agent, scoreboard
+- `module2/examples/uvm_smoke/Makefile` — Verilator + UVM build
+
+## Key Concepts
+
+### 1. Transaction-level TB
+
+- Stimulus is a **transaction** (what to do), not raw pin toggles in one big `initial` block.
+- Driver converts transactions to pin activity; monitor converts pins back to transactions.
+
+### 2. Scoreboard closure
+
+- Expected queue vs observed values — same pattern for UART/SPI/I²C UVM modules.
+
+## Common Pitfalls
+
+1. **Skipping monitor or scoreboard**
+   - **Mistake**: Only driving the DUT and eyeballing waves.
+   - **Correct**: Monitor + scoreboard automate expected vs observed.
+   - **Why**: Scales when you add dozens of tests.
+
+2. **UVM_HOME not set**
+   - **Mistake**: Build fails with missing `uvm_pkg.sv`.
+   - **Correct**: Export UVM_HOME or use vendored UVM under `tools/`.
+   - **Why**: Compiler cannot find UVM includes.
+
+---
+
 ## Topics Covered
 
 ### 1. Basic Testbench (Directed Tests, Pin Wiggling)
@@ -138,7 +169,20 @@ This structure scales: for UART (Module 4), SPI (Module 6), and I²C (Module 8) 
 
 ## Example: uvm_smoke
 
-The example in [module2/examples/uvm_smoke/](../module2/examples/uvm_smoke/) demonstrates:
+#### Example 2.1: UVM smoke test (`module2/examples/uvm_smoke/`)
+
+**What it demonstrates:**
+
+- UVM transaction, sequence, driver, monitor, and scoreboard on a tiny register DUT
+- How objections start and end the test in `run_phase`
+- Interpreting DRIVER / MONITOR / SCOREBOARD messages and match counts
+
+```bash
+cd module2/examples/uvm_smoke
+make SIM=verilator TEST=test_uvm_smoke
+```
+
+The example in [module2/examples/uvm_smoke/](../module2/examples/uvm_smoke/) also documents:
 
 | Component   | Role |
 |------------|------|

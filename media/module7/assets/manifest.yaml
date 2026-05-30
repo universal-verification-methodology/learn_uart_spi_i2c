@@ -17,6 +17,7 @@ assets:
   generator: render_diagrams.sh
   slides:
   - 9
+  - 12
   license: learn_uart_spi_i2c course materials
 - id: verification_architecture
   type: diagram
@@ -25,6 +26,7 @@ assets:
   generator: render_diagrams.sh
   slides:
   - 10
+  - 13
   license: learn_uart_spi_i2c course materials
 - id: testing_methods
   type: diagram
@@ -32,7 +34,10 @@ assets:
   source: assets/diagrams/testing_methods.mmd
   generator: render_diagrams.sh
   slides:
-  - 15
+  - 11
+  - 23
+  - 24
+  - 25
   license: learn_uart_spi_i2c course materials
 - id: module7_check
   type: screenshot
@@ -40,13 +45,12 @@ assets:
   capture_command: ./scripts/module7.sh --help
   cwd: .
   slides:
-  - 23
-  expect_stdout_contains: Module
-- id: i2c_baseline
+  - 31
+  expect_stdout_contains: All required checks for Module 7 passed
+- id: ex01_i2c_baseline
   type: screenshot
-  file: assets/screenshots/ex01_examples/i2c_baseline.png
-  capture_command: ./scripts/module7.sh --run
+  file: assets/screenshots/ex01_i2c_baseline.png
+  capture_command: cd module7/examples/i2c_baseline && make run
   cwd: .
   slides:
-  - 25
-  expect_stdout_contains: I2C baseline test PASS
+  - 33

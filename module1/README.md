@@ -12,6 +12,12 @@ This module establishes the **methodology** you will use for the rest of the cou
 
 No protocol-specific content (UART/SPI/I²C) or UVM yet—those come in later modules.
 
+## How to learn this module
+
+1. Read [docs/MODULE1.md](../docs/MODULE1.md) — **Before You Start**, **Design Architecture**, **Verification & Testing Methods**, then **Topics Covered**.
+2. Use [UNDERSTANDING_THE_SPEC.md](UNDERSTANDING_THE_SPEC.md) and [SPEC_TO_RTL_GUIDE.md](SPEC_TO_RTL_GUIDE.md) while studying the counter example.
+3. Run [EXAMPLES.md](EXAMPLES.md), then review [media/module1/slides.pptx](../media/module1/slides.pptx) (or `video.mp4`).
+
 ## Links
 
 - **Full module doc**: [docs/MODULE1.md](../docs/MODULE1.md)

@@ -9,6 +9,10 @@ slides:
 - type: title
   title: Module 7
   subtitle: I²C — Protocol + RTL + Basic Testbench
+  narration: Welcome to module 7, I²C — Protocol + RTL + Basic Testbench. In this
+    module you will understand the i²c protocol (start/stop, addressing, ack/nack),
+    translate it to rtl (simple master + timing), and verify with a basic (non-uvm)
+    directed testbench..
 - type: bullets
   title: Learning objectives
   bullets:
@@ -18,83 +22,247 @@ slides:
   - 'Protocol vs simplification: Real open-drain/ACK vs this repo’s push-pull teaching
     model.'
   - 'Path to Module 8: Same DUT with UVM monitor/scoreboard on address and data phases.'
+  narration: 'Here is what you will learn in this module. RTL block architecture:
+    clk_div + i2c_master FSM (START → addr → data → STOP). Baseline verification:
+    Directed writes plus inline bus monitor (sample SDA on rising SCL). Protocol vs
+    simplification: Real open-drain/ACK vs this repo’s push-pull teaching model. Path
+    to Module 8: Same DUT with UVM monitor/scoreboard on address and data phases.'
 - type: bullets
   title: Prerequisites
   bullets:
   - Modules 1–6.
   - Verilator, Make, C++ compiler. No UVM required for this baseline.
+  narration: Before you start, make sure you have these prerequisites. Modules 1–6.
+    Verilator, Make, C++ compiler. No UVM required for this baseline.
 - type: image
   title: Learning path
   image: assets/diagrams/learning_path.png
   caption: Understand the I²C protocol (start/stop, addressing, ACK/NACK), translate
     it to RTL (simple master + timing), and verify with a **basic** (non-UVM) directed
     testbench.
+  narration: Learning path. Understand the I²C protocol (start/stop, addressing, ACK/NACK),
+    translate it to RTL (simple master + timing), and verify with a basic (non-UVM)
+    directed testbench.
 - type: bullets
   title: Overview
   bullets:
   - Module 7 is the I²C **protocol + RTL + basic testbench** module (UVM comes in
     Module 8).
+  narration: Overview. Module 7 is the I²C protocol + RTL + basic testbench module
+    (UVM comes in Module 8).
 - type: section
   title: How to learn this module
+  narration: 'Next section: How to learn this module.'
 - type: bullets
   title: Suggested learning path
   bullets:
   - 'Read the detailed I²C learning guide: I2C_LEARNING_GUIDE.md — what I²C is, what
-    kind of protocol (serial, synchronous, two-wire bus), how it works (START/STOP,
-    address+R/W, data, ACK/NACK concept), and where it’s used.'
+    kind of protocol (serial, synchronous, two-wire bus)...'
   - 'Read the protocols + UVM overview: LEARNING_GUIDE_PROTOCOLS_AND_UVM.md — Part
-    B § 4. When to Use Baseline vs UVM (why we start with a baseline test before I²C
-    UVM in Module 8).'
+    B § 4. When to Use Baseline vs UVM (why we start with a...'
   notes: From docs/MODULE7.md — read guides before running demos.
+  narration: 'Follow this learning path. Read the guides before running the labs.
+    Read the detailed I²C learning guide: I2C_LEARNING_GUIDE.md — what I²C is, what
+    kind of protocol (serial, synchronous, two-wire bus)... Read the protocols + UVM
+    overview: LEARNING_GUIDE_PROTOCOLS_AND_UVM.md — Part B § 4. When to Use Baseline
+    vs UVM (why we start with a... From docs/MODULE7.md — read guides before running
+    demos.'
 - type: section
   title: Design architecture
-- type: image
-  title: RTL / block architecture
-  image: assets/diagrams/rtl_architecture.png
-  caption: 'Module 7: DUT / block hierarchy (see module7/examples/).'
-- type: image
-  title: Verification environment architecture
-  image: assets/diagrams/verification_architecture.png
-  caption: 'Module 7: UVM layers, agents, and checkers for this phase.'
-- type: bullets
+  narration: 'Next section: Design architecture.'
+- type: two_column
   title: 1. Block hierarchy
-  bullets:
+  left:
   - top_i2c_baseline → `clk_div` + `i2c_master`; C++ drives `clk`/`rst_n`.
+  right: assets/diagrams/rtl_architecture.png
   notes: From MODULE7 Design Architecture.
-- type: bullets
+  narration: 1. Block hierarchy. top_i2c_baseline → clk_div + i2c_master; C++ drives
+    clk/rst_n. Refer to the diagram on the right.
+- type: two_column
   title: 2. I²C master FSM
-  bullets:
+  left:
   - 'States: IDLE → START → ADDR_BITS → DATA_BITS → STOP.'
   - 'One teaching write: 7-bit `addr` + data byte on `scl`/`sda` (push-pull model).'
+  right: assets/diagrams/verification_architecture.png
   notes: From MODULE7 Design Architecture.
-- type: bullets
+  narration: '2. I²C master FSM. States: IDLE → START → ADDR_BITS → DATA_BITS → STOP.
+    One teaching write: 7-bit addr + data byte on scl/sda (push-pull model). Refer
+    to the diagram on the right.'
+- type: two_column
   title: 3. Teaching vs real I²C
-  bullets:
+  left:
   - No open-drain, ACK/NACK, or arbitration in baseline — learn sequencing first.
+  right: assets/diagrams/testing_methods.png
   notes: From MODULE7 Design Architecture.
+  narration: 3. Teaching vs real I²C. No open-drain, ACK/NACK, or arbitration in baseline
+    — learn sequencing first. Refer to the diagram on the right.
+- type: image
+  title: RTL block diagram (reference)
+  image: assets/diagrams/rtl_architecture.png
+  caption: 'Module 7: DUT hierarchy and signal flow.'
+  narration: 'RTL block diagram (reference). Module 7: DUT hierarchy and signal flow.'
+- type: image
+  title: Verification / testbench diagram (reference)
+  image: assets/diagrams/verification_architecture.png
+  caption: 'Module 7: stimulus, observation, and checking.'
+  narration: 'Verification / testbench diagram (reference). Module 7: stimulus, observation,
+    and checking.'
+- type: code
+  title: i2c_master FSM
+  language: systemverilog
+  source_file: module7/examples/i2c_baseline/dut/i2c_master.v
+  code: "// Simple I2C master (baseline write-only, single target).\n// Teaching example:\
+    \ we treat SCL/SDA as simple push-pull signals, not full\n// open-drain with multi-master\
+    \ arbitration. Focus is on bit timing and\n// start/address/data/stop sequencing.\n\
+    //\n// One transaction:\n//   - START\n//   - 7-bit address + write bit (0)\n\
+    //   - 8-bit data byte\n//   - STOP\n\n`timescale 1ns/1ps\n\nmodule i2c_master\
+    \ (\n    input  wire       clk,\n    input  wire       rst_n,        // Active-low\
+    \ async reset\n    input  wire       clk_div_tick, // Divider pulse controlling\
+    \ SCL timing\n    input  wire       start,        // Pulse high for one cycle\
+    \ to start transfer\n    input  wire [6:0] addr,         // 7-bit I2C address\n\
+    \    input  wire [7:0] data_in,      // Byte to send\n    output reg        scl,\
+    \          // I2C clock (simplified)\n    output reg        sda,          // I2C\
+    \ data (simplified)\n    output reg        busy,         // High while transfer\
+    \ in progress\n    output reg        done          // One-cycle pulse at end of\
+    \ transfer\n);\n    typedef enum logic [2:0] {\n        IDLE,\n        START_COND,\n\
+    \        ADDR_BITS,\n        DATA_BITS,\n// ..."
+  narration: i2c_master FSM. Review the code on screen and match it to files in the
+    repository.
+- type: code
+  title: clk_div — SCL timing
+  language: systemverilog
+  source_file: module7/examples/i2c_baseline/dut/clk_div.v
+  code: "// Simple clock divider for I2C SCL timing (teaching example).\n// Generates\
+    \ a 1-cycle-wide clk_div_tick pulse every DIVIDER cycles of clk.\n\n`timescale\
+    \ 1ns/1ps\n\nmodule clk_div #(\n    parameter int DIVIDER = 8\n) (\n    input\
+    \  wire clk,\n    input  wire rst_n,       // Active-low async reset\n    output\
+    \ reg  clk_div_tick // One-cycle pulse at divided rate\n);\n    int count;\n\n\
+    \    always @(posedge clk or negedge rst_n) begin\n        if (!rst_n) begin\n\
+    \            count        <= 0;\n            clk_div_tick <= 1'b0;\n// ..."
+  narration: clk_div — SCL timing. Review the code on screen and match it to files
+    in the repository.
+- type: section
+  title: Execution & simulation flow
+  narration: 'Next section: Execution & simulation flow.'
+- type: bullets
+  title: How the example runs (toolchain)
+  bullets:
+  - 'Makefile: Verilator compiles RTL + SystemVerilog testbench into a C++ model'
+  - 'sim_main.cpp: generates clk/rst_n, calls eval() until $finish'
+  - 'Directed test (initial block or C++): drive stimulus, wait for DUT flags'
+  - 'Self-check: compare outputs; print PASS/FAIL (see terminal demo slide)'
+  - 'Repo path: module7/examples/<example>/ — run make run from that directory'
+  notes: From MODULE7 — execution and artifact layout.
+  narration: 'How the example runs (toolchain). Match each bullet to files in the
+    repository. Makefile: Verilator compiles RTL + SystemVerilog testbench into a
+    C++ model sim_main.cpp: generates clk/rst_n, calls eval() until $finish Directed
+    test (initial block or C++): drive stimulus, wait for DUT flags Self-check: compare
+    outputs; print PASS/FAIL (see terminal demo slide) Repo path...'
+- type: bullets
+  title: Example directory layout
+  bullets:
+  - 'dut/: i2c_master.v, clk_div.v'
+  - 'top_i2c_baseline.sv: Instantiates DUT + directed test + monitor/self-check'
+  - 'sim_main.cpp: Clock/reset harness; simulation runs until $finish'
+  notes: Match each path to files under module/examples/.
+  narration: 'Example directory layout. Match each bullet to files in the repository.
+    dut/: i2c_master.v, clk_div.v top_i2c_baseline.sv: Instantiates DUT + directed
+    test + monitor/self-check sim_main.cpp: Clock/reset harness; simulation runs until
+    $finish Match each path to files under module/examples/.'
+- type: code
+  title: Makefile — i2c_baseline run
+  language: text
+  source_file: module7/examples/i2c_baseline/Makefile
+  code: '# Makefile for Module 7 I2C baseline (basic testbench, no UVM)
+
+    #
+
+    # Usage:
+
+    #   make run
+
+    #
+
+
+    VERILATOR ?= verilator
+
+    TOPLEVEL ?= top_i2c_baseline
+
+    DUT_SRC = dut/*.v
+
+    RTL_SRC = top_i2c_baseline.sv $(DUT_SRC)
+
+    HARNESS = sim_main.cpp
+
+
+    VERILATOR_FLAGS = -sv --timing -Wall -Wno-fatal -Wno-TIMESCALEMOD -Wno-WIDTHTRUNC
+
+
+    .PHONY: run compile clean
+
+
+    // ...'
+  narration: Makefile — i2c_baseline run. Review the code on screen and match it to
+    files in the repository.
+- type: section
+  title: Key files to study
+  narration: 'Next section: Key files to study.'
+- type: bullets
+  title: Open these in the repo
+  bullets:
+  - '`module7/examples/i2c_baseline/dut/i2c_master.v` — START/addr/data/STOP FSM'
+  - '`module7/examples/i2c_baseline/top_i2c_baseline.sv` — stimulus + inline bus monitor'
+  - '`docs/I2C_LEARNING_GUIDE.md` — protocol reference'
+  notes: Trace while running module7/EXAMPLES.md labs.
+  narration: Open these in the repo. module7/examples/i2c_baseline/dut/i2c_master.v
+    — START/addr/data/STOP FSM module7/examples/i2c_baseline/top_i2c_baseline.sv —
+    stimulus + inline bus monitor docs/I2C_LEARNING_GUIDE.md — protocol reference
+    Trace while running module7/EXAMPLES.md labs.
 - type: section
   title: Verification & testing methods
-- type: image
-  title: Testing and closure flow
-  image: assets/diagrams/testing_methods.png
-  caption: 'Module 7: how tests, checks, and metrics close verification goals.'
-- type: bullets
+  narration: 'Next section: Verification & testing methods.'
+- type: two_column
   title: 1. Inline bus monitor
-  bullets:
+  left:
   - Top module detects START; samples SDA on rising SCL; rebuilds addr+W and data.
+  right: assets/diagrams/testing_methods.png
   notes: From MODULE7 Verification & Testing Methods.
-- type: bullets
+  narration: 1. Inline bus monitor. Top module detects START; samples SDA on rising
+    SCL; rebuilds addr+W and data. Refer to the diagram on the right.
+- type: two_column
   title: 2. Self-check flow
-  bullets:
+  left:
   - Compare captured bytes to driven `addr`/`data_in`; print `I2C baseline test PASS`.
+  right: assets/diagrams/testing_methods.png
   notes: From MODULE7 Verification & Testing Methods.
-- type: bullets
+  narration: 2. Self-check flow. Compare captured bytes to driven addr/data_in; print
+    I2C baseline test PASS. Refer to the diagram on the right.
+- type: two_column
   title: 3. Path to Module 8
-  bullets:
+  left:
   - Move monitor into I2cMonitor; scoreboard splits address and data phases.
+  right: assets/diagrams/testing_methods.png
   notes: From MODULE7 Verification & Testing Methods.
+  narration: 3. Path to Module 8. Move monitor into I2cMonitor; scoreboard splits
+    address and data phases. Refer to the diagram on the right.
+- type: code
+  title: Directed I2C test
+  language: systemverilog
+  source_file: module7/examples/i2c_baseline/top_i2c_baseline.sv
+  code: "        .data_in     (data_in),\n        .scl         (scl),\n        .sda\
+    \         (sda),\n        .busy        (busy),\n        .done        (done)\n\
+    \    );\n\n    // Monitor: detect START, then sample 8 address bits and 8 data\
+    \ bits.\n    initial begin : i2c_monitor\n        int i;\n        captured_addr_w\
+    \ = 8'h00;\n        captured_data   = 8'h00;\n\n        wait (rst_n === 1'b1);\n\
+    \n        // START: SDA falls while SCL high\n        @(negedge sda);\n      \
+    \  if (scl !== 1'b1) begin\n            $display(\"[FAIL] I2C baseline: start\
+    \ condition detected but SCL not high\");\n            $finish;\n        end\n\
+    \n// ..."
+  narration: Directed I2C test. Review the code on screen and match it to files in
+    the repository.
 - type: section
   title: Syllabus topics
+  narration: 'Next section: Syllabus topics.'
 - type: bullets
   title: 1. I²C Protocol Essentials
   bullets:
@@ -106,36 +274,91 @@ slides:
   - 'ACK/NACK (concept): receiver pulls SDA low for ACK on the 9th clock; high means
     NACK.'
   notes: From MODULE7 Topics Covered.
+  narration: '1. I²C Protocol Essentials. Bus idle: SCL=1, SDA=1. START: SDA goes
+    1→0 while SCL is 1. STOP: SDA goes 0→1 while SCL is 1. Address phase: 7-bit address
+    + R/W bit (0=write, 1=read) sent MSB first. Data phase: 8-bit data bytes sent
+    MSB first.'
 - type: bullets
   title: 2. Hands-on testbench (i2c_baseline)
   bullets:
   - 'Stimulus: `start`, `addr`, `data_in`, `wait(done)`.'
   - 'Monitor/self-check: reconstruct address+W and data from SCL/SDA; compare to expected.'
   notes: From MODULE7 Topics Covered.
+  narration: '2. Hands-on testbench (i2c_baseline). Stimulus: start, addr, data_in,
+    wait(done). Monitor/self-check: reconstruct address+W and data from SCL/SDA; compare
+    to expected.'
 - type: section
   title: Hands-on examples
+  narration: 'Next section: Hands-on examples.'
 - type: demo
   title: Module 7 self-check
   command: ./scripts/module7.sh --help
   screenshot: assets/screenshots/module7_check.png
-  expect_stdout_contains: Module
+  expect_stdout_contains: All required checks for Module 7 passed
   notes: Run from course repository root.
+  narration: Module 7 self-check. Watch the terminal output and confirm you see the
+    expected pass message.
 - type: bullets
-  title: 'Example 1: I²C baseline'
+  title: 'Example 1: I²C baseline master'
   bullets:
-  - Drives a single write transaction (START → address+W → data → STOP)
-  - Includes a simple bus monitor that samples SDA on SCL rising edges to reconstruct
-    bytes
-  - No UVM
-  notes: module7/examples/examples/i2c_baseline/README.md
+  - 'I²C master FSM: START → address+W → data → STOP'
+  - Inline bus monitor sampling SDA on rising SCL
+  - Comparing reconstructed address and data bytes to stimulus
+  notes: module7/examples/i2c_baseline/README.md
+  narration: 'Example 1: I²C baseline master. I²C master FSM: START → address+W →
+    data → STOP Inline bus monitor sampling SDA on rising SCL Comparing reconstructed
+    address and data bytes to stimulus module7/examples/i2c_baseline/README.md'
 - type: demo
-  title: 'Demo: I²C baseline'
-  command: ./scripts/module7.sh --run
-  screenshot: assets/screenshots/ex01_examples/i2c_baseline.png
-  notes: 'Hands-on: module7/examples/examples/i2c_baseline/'
-  expect_stdout_contains: I2C baseline test PASS
+  title: 'Demo: I²C baseline master'
+  command: cd module7/examples/i2c_baseline && make run
+  screenshot: assets/screenshots/ex01_i2c_baseline.png
+  notes: 'Hands-on: module7/examples/i2c_baseline/'
+  narration: 'Demo: I²C baseline master. Watch the terminal output and confirm you
+    see the expected pass message.'
+- type: section
+  title: Key concepts
+  narration: 'Next section: Key concepts.'
+- type: bullets
+  title: 1. Two-wire bus
+  bullets:
+  - SCL + SDA; START/STOP when SCL is high; data changed when SCL is low (simplified
+    model).
+  notes: From MODULE7 Key Concepts.
+  narration: 1. Two-wire bus. SCL + SDA; START/STOP when SCL is high; data changed
+    when SCL is low (simplified model).
+- type: bullets
+  title: 2. Address + data phases
+  bullets:
+  - 8 bits address+R/W (MSB first), then 8 bits data — monitor both separately.
+  notes: From MODULE7 Key Concepts.
+  narration: 2. Address + data phases. 8 bits address+R/W (MSB first), then 8 bits
+    data — monitor both separately.
+- type: section
+  title: Common pitfalls
+  narration: 'Next section: Common pitfalls.'
+- type: bullets
+  title: Ignoring START detection
+  bullets:
+  - 'Mistake: Sampling bits before a valid START condition.'
+  - 'Correct: Detect SDA 1→0 while SCL high, then sample on rising SCL.'
+  - 'Why: Reconstructed bytes align to wrong frame boundary.'
+  notes: From MODULE7 Common Pitfalls.
+  narration: 'Ignoring START detection. Mistake: Sampling bits before a valid START
+    condition. Correct: Detect SDA 1→0 while SCL high, then sample on rising SCL.
+    Why: Reconstructed bytes align to wrong frame boundary.'
+- type: bullets
+  title: Expecting full-spec ACK
+  bullets:
+  - 'Mistake: Assuming teaching RTL models open-drain ACK/NACK.'
+  - 'Correct: Treat baseline as sequencing practice; ACK comes in extensions.'
+  - 'Why: Our push-pull teaching DUT simplifies the bus.'
+  notes: From MODULE7 Common Pitfalls.
+  narration: 'Expecting full-spec ACK. Mistake: Assuming teaching RTL models open-drain
+    ACK/NACK. Correct: Treat baseline as sequencing practice; ACK comes in extensions.
+    Why: Our push-pull teaching DUT simplifies the bus.'
 - type: section
   title: Practice & assessment
+  narration: 'Next section: Practice & assessment.'
 - type: bullets
   title: Exercises
   bullets:
@@ -143,6 +366,8 @@ slides:
   - Trace one transfer
   - Bus monitor
   - 'Optional: Waveforms'
+  narration: 'Exercises. Run i2c_baseline Trace one transfer Bus monitor Optional:
+    Waveforms'
 - type: bullets
   title: Assessment checklist
   bullets:
@@ -151,11 +376,20 @@ slides:
     (simplified).
   - Can run i2c_baseline and interpret the test result.
   - 'Ready for Module 8: I²C UVM+SV verification.'
+  narration: 'Assessment checklist. Can describe I²C START, STOP, address+R/W, and
+    data phase (and ACK/NACK concept). Can explain the role of i2c_master and clk_div;
+    know the baseline uses push-pull (simplified). Can run i2c_baseline and interpret
+    the test result. Ready for Module 8: I²C UVM+SV verification.'
 - type: bullets
   title: Summary & next steps
   bullets:
   - Understand the I²C protocol (start/stop, addressing, ACK/NACK), translate it to
-    RTL (simple master + timing), and verify with a **basic** (non-UVM) directed testbench.
+    RTL (simple master + timing), and verify with a...
   - Complete module7/CHECKLIST.md
   - Review module7/EXAMPLES.md and run each lab
   - 'Next: I²C UVM+SV'
+  narration: 'In summary: Understand the I²C protocol (start/stop, addressing, ACK/NACK),
+    translate it to RTL (simple master + timing), and verify with a basic (non-UVM)
+    directed testbench. Next up: I²C UVM+SV. Understand the I²C protocol (start/stop,
+    addressing, ACK/NACK), translate it to RTL (simple master + timing), and verify
+    with a basic... Complete module7/CHECKLIST.md Review module7/EXAMPLES.md and...'

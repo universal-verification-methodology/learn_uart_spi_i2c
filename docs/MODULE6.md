@@ -97,6 +97,36 @@ Module 6 builds on Module 5 (SPI protocol + RTL + basic testbench):
 
 ---
 
+## Key files to study
+
+- `module6/examples/spi_uvm/dut/spi_master.v` — reused from Module 5
+- `module6/examples/spi_uvm/test_spi_uvm.sv` — SpiMonitor samples MOSI on SCLK
+- `docs/LEARNING_GUIDE_PROTOCOLS_AND_UVM.md` — § 7 SPI UVM mapping
+
+## Key Concepts
+
+### 1. Bus-centric verification
+
+- Monitor rebuilds the byte from SCLK/MOSI/CS_N, not only the DUT status flag.
+
+### 2. Mode 0 in the monitor
+
+- Wait for `cs_n` low, then 8 rising edges, MSB first into `observed_mosi`.
+
+## Common Pitfalls
+
+1. **Sampling MOSI on wrong edge**
+   - **Mistake**: Using falling SCLK for Mode 0 capture.
+   - **Correct**: Rising-edge samples in SpiMonitor.
+   - **Why**: Scoreboard mismatches even when `done` pulses.
+
+2. **Ignoring CS framing**
+   - **Mistake**: Counting SCLK edges across multiple frames.
+   - **Correct**: Reset bit index when `cs_n` deasserts and a new frame starts.
+   - **Why**: Bytes merge or split incorrectly.
+
+---
+
 ## Topics Covered
 
 ### 1. SPI protocol recap (Mode 0)
@@ -110,6 +140,19 @@ Module 6 builds on Module 5 (SPI protocol + RTL + basic testbench):
 ---
 
 ## Example: spi_uvm
+
+#### Example 6.1: SPI UVM agent (`module6/examples/spi_uvm/`)
+
+**What it demonstrates:**
+
+- SPI DUT from Module 5 with UVM driver, monitor, and scoreboard
+- Monitor samples MOSI on rising SCLK (Mode 0, MSB first)
+- Bus-centric checking vs relying only on the DUT `done` flag
+
+```bash
+cd module6/examples/spi_uvm
+make SIM=verilator TEST=test_spi_uvm
+```
 
 | Component | Role |
 |-----------|------|

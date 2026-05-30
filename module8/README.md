@@ -10,6 +10,12 @@ This module builds on Module 7 (I²C protocol + RTL + basic testbench):
 - **UVM testbench**: I²C agent — transaction, sequence, driver, monitor, scoreboard; directed sequence of address+data writes; monitor observes SDA/SCL and scoreboard checks expected vs observed.
 - **Toolchain**: Verilator + UVM_HOME + Make (same as Module 2 and Module 6).
 
+## How to learn this module
+
+1. Read [docs/MODULE8.md](../docs/MODULE8.md) and [docs/I2C_LEARNING_GUIDE.md](../docs/I2C_LEARNING_GUIDE.md) (UVM mapping § 8).
+2. Complete Module 7 `i2c_baseline` first.
+3. Run [EXAMPLES.md](EXAMPLES.md), then compare with UART/SPI UVM modules; review [media/module8/slides.pptx](../media/module8/slides.pptx).
+
 ## Links
 
 - **Full module doc**: [docs/MODULE8.md](../docs/MODULE8.md)

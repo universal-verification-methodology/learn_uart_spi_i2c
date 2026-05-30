@@ -114,6 +114,38 @@ UVM is **not** required for Module 1.
 
 ---
 
+## Key files to study
+
+- `module1/examples/spec_to_rtl/SPEC.md` — requirements document
+- `module1/examples/spec_to_rtl/dut/counter.v` — RTL implementation
+- `module1/examples/spec_to_rtl/top.v` — DUT wrapper
+- `module1/examples/spec_to_rtl/sim_main.cpp` — stimulus and checking
+
+## Key Concepts
+
+### 1. Specification first
+
+- Interface, behavior, and timing live in SPEC.md before RTL.
+- Every check in the testbench should trace to a spec sentence.
+
+### 2. Traceability
+
+- Spec line ↔ RTL line ↔ test expectation — practice for UART/SPI/I²C later.
+
+## Common Pitfalls
+
+1. **RTL before spec**
+   - **Mistake**: Coding counters or FSMs without a written spec.
+   - **Correct**: Complete SPEC.md (or equivalent) first.
+   - **Why**: Reviewers and tests have no golden reference.
+
+2. **Weak checks**
+   - **Mistake**: Only printing values without comparing to expected results.
+   - **Correct**: Explicit PASS/FAIL when `count != expected`.
+   - **Why**: Simulation can run without verifying correctness.
+
+---
+
 ## Topics Covered
 
 ### 1. Specification → RTL Design Flow
@@ -148,7 +180,20 @@ Beginners can use these guides in order:
 
 ## Example: spec_to_rtl
 
-The example in [module1/examples/spec_to_rtl/](../module1/examples/spec_to_rtl/) demonstrates:
+#### Example 1.1: Spec to RTL counter (`module1/examples/spec_to_rtl/`)
+
+**What it demonstrates:**
+
+- Reading SPEC.md and mapping each requirement to RTL in `dut/counter.v`
+- Building a minimal top and C++ harness (clock, reset, enable)
+- Directed verification: enable for N cycles and check `count == N`
+
+```bash
+cd module1/examples/spec_to_rtl
+make run
+```
+
+The example in [module1/examples/spec_to_rtl/](../module1/examples/spec_to_rtl/) also documents:
 
 | Step        | Artifact        | Description |
 |------------|-----------------|-------------|

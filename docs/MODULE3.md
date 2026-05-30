@@ -102,6 +102,40 @@ Module 3 is the first **protocol** module:
 
 ---
 
+## Key files to study
+
+- `module3/examples/uart_baseline/dut/baud_gen.v` — divider → `baud_tick`
+- `module3/examples/uart_baseline/dut/uart_tx.v` — 8N1 transmit
+- `module3/examples/uart_baseline/dut/uart_rx.v` — receive and `data_valid`
+- `module3/examples/uart_baseline/top_uart_baseline.sv` — loopback + directed test
+- `docs/UART_LEARNING_GUIDE.md` — protocol reference
+
+## Key Concepts
+
+### 1. Asynchronous serial
+
+- No dedicated clock wire; TX and RX must share the same bit time (`baud_tick`).
+- Loopback (`rx = tx`) proves TX serialization and RX deserialization together.
+
+### 2. 8N1 frame
+
+- Idle high → start (0) → 8 data bits LSB first → stop (1).
+- `busy` on TX; `data_valid` pulse on RX when a byte is ready.
+
+## Common Pitfalls
+
+1. **Mismatched baud timing**
+   - **Mistake**: Different dividers on TX and RX in a loopback test.
+   - **Correct**: One `baud_gen` drives both (as in uart_baseline).
+   - **Why**: RX samples at the wrong bit times.
+
+2. **Only checking `busy`**
+   - **Mistake**: Assuming success when TX finishes.
+   - **Correct**: Wait for `data_valid` and compare `data_out` to the sent byte.
+   - **Why**: `busy` does not prove the loopback byte is correct.
+
+---
+
 ## Topics Covered
 
 ### 1. UART Protocol (8N1)
@@ -155,6 +189,19 @@ Module 3 is the first **protocol** module:
 ---
 
 ## Example: uart_baseline
+
+#### Example 3.1: UART baseline loopback (`module3/examples/uart_baseline/`)
+
+**What it demonstrates:**
+
+- UART 8N1 TX/RX RTL with shared `baud_gen`
+- Loopback wiring (`rx = tx`) and directed bytes 0x55 / 0xAA
+- Baseline self-check without UVM (wait for `data_valid`, compare `data_out`)
+
+```bash
+cd module3/examples/uart_baseline
+make run
+```
 
 | Component | Role |
 |-----------|------|

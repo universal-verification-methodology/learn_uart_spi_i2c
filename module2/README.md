@@ -12,6 +12,12 @@ This module builds on Module 1 (spec → RTL) by focusing on **verification**:
 
 No protocol-specific content (UART/SPI/I²C) yet; those start in Module 3.
 
+## How to learn this module
+
+1. Read [docs/MODULE2.md](../docs/MODULE2.md) — architecture and verification sections before running UVM.
+2. Complete Module 1 `spec_to_rtl` if you have not already.
+3. Run [EXAMPLES.md](EXAMPLES.md) (`uvm_smoke`), then review [media/module2/slides.pptx](../media/module2/slides.pptx).
+
 ## Links
 
 - **Full module doc**: [docs/MODULE2.md](../docs/MODULE2.md)

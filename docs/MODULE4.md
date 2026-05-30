@@ -102,6 +102,36 @@ Module 4 builds on Module 3 (UART protocol + RTL + basic testbench):
 
 ---
 
+## Key files to study
+
+- `module4/examples/uart_uvm/dut/` — same UART RTL as Module 3
+- `module4/examples/uart_uvm/test_uart_uvm.sv` — agent, env, loopback hooks
+- `docs/LEARNING_GUIDE_PROTOCOLS_AND_UVM.md` — § 6 UART UVM mapping
+
+## Key Concepts
+
+### 1. Reuse DUT, upgrade TB
+
+- RTL unchanged from baseline; UVM replaces directed `initial` stimulus.
+
+### 2. Dual path checking
+
+- TX monitor reconstructs serial bytes; RX hook checks loopback `data_valid`.
+
+## Common Pitfalls
+
+1. **Monitor baud mismatch**
+   - **Mistake**: Sampling `tx` at system clock instead of `baud_tick` times.
+   - **Correct**: One sample per `baud_tick` per UART rules (as in UartTxMonitor).
+   - **Why**: Reconstructed byte will not match driven data.
+
+2. **Forgetting loopback RX check**
+   - **Mistake**: Scoreboard only compares TX monitor output.
+   - **Correct**: Also call `check_rx_byte` when `data_valid` asserts.
+   - **Why**: TX path can pass while RX is broken.
+
+---
+
 ## Topics Covered
 
 ### 1. UART protocol recap (8N1)
@@ -116,6 +146,19 @@ Module 4 builds on Module 3 (UART protocol + RTL + basic testbench):
 ---
 
 ## Example: uart_uvm
+
+#### Example 4.1: UART UVM agent (`module4/examples/uart_uvm/`)
+
+**What it demonstrates:**
+
+- Same UART DUT as Module 3 with a full UVM agent (sequence, driver, monitor, scoreboard)
+- Monitor reconstructs bytes from the serial `tx` line
+- Loopback RX checking via `check_rx_byte` in the scoreboard
+
+```bash
+cd module4/examples/uart_uvm
+make SIM=verilator TEST=test_uart_uvm
+```
 
 | Component | Role |
 |-----------|------|

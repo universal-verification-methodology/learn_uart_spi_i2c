@@ -17,6 +17,7 @@ assets:
   generator: render_diagrams.sh
   slides:
   - 9
+  - 12
   license: learn_uart_spi_i2c course materials
 - id: verification_architecture
   type: diagram
@@ -25,6 +26,7 @@ assets:
   generator: render_diagrams.sh
   slides:
   - 10
+  - 13
   license: learn_uart_spi_i2c course materials
 - id: testing_methods
   type: diagram
@@ -32,7 +34,10 @@ assets:
   source: assets/diagrams/testing_methods.mmd
   generator: render_diagrams.sh
   slides:
-  - 15
+  - 11
+  - 23
+  - 24
+  - 25
   license: learn_uart_spi_i2c course materials
 - id: module4_check
   type: screenshot
@@ -40,13 +45,12 @@ assets:
   capture_command: ./scripts/module4.sh --help
   cwd: .
   slides:
-  - 23
-  expect_stdout_contains: Module
-- id: uart_uvm
+  - 31
+  expect_stdout_contains: All required checks for Module 4 passed
+- id: ex01_uart_uvm
   type: screenshot
-  file: assets/screenshots/ex01_examples/uart_uvm.png
-  capture_command: ./scripts/module4.sh --run
+  file: assets/screenshots/ex01_uart_uvm.png
+  capture_command: cd module4/examples/uart_uvm && make SIM=verilator TEST=test_uart_uvm
   cwd: .
   slides:
-  - 26
-  expect_stdout_contains: SCOREBOARD
+  - 33

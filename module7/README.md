@@ -12,6 +12,12 @@ This module is the third **protocol** module (after UART and SPI):
 
 > Note: The baseline RTL here is a **teaching simplification**: it treats SCL/SDA as push-pull outputs and does **not** model open-drain behavior, ACK/NACK, or multi-master arbitration.
 
+## How to learn this module
+
+1. Read [docs/MODULE7.md](../docs/MODULE7.md) and [docs/I2C_LEARNING_GUIDE.md](../docs/I2C_LEARNING_GUIDE.md).
+2. Complete Modules 1–6 for methodology and UART/SPI context.
+3. Run [EXAMPLES.md](EXAMPLES.md), then review [media/module7/slides.pptx](../media/module7/slides.pptx).
+
 ## Links
 
 - **Full module doc**: [docs/MODULE7.md](../docs/MODULE7.md)

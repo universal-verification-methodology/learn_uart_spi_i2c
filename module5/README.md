@@ -10,6 +10,12 @@ This module is the second **protocol** module (after UART):
 - **RTL**: `spi_master`, `clk_div` — master drives SCLK/MOSI/CS_N; divider produces clk_div_tick.
 - **Basic testbench**: Directed test (start, data_in; wait for done). **No UVM** — UVM for SPI is Module 6.
 
+## How to learn this module
+
+1. Read [docs/MODULE5.md](../docs/MODULE5.md) and [docs/SPI_LEARNING_GUIDE.md](../docs/SPI_LEARNING_GUIDE.md).
+2. Complete Modules 1–4 (methodology + UART) for context.
+3. Run [EXAMPLES.md](EXAMPLES.md), then review [media/module5/slides.pptx](../media/module5/slides.pptx).
+
 ## Links
 
 - **Full module doc**: [docs/MODULE5.md](../docs/MODULE5.md)

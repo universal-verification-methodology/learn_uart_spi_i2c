@@ -1,41 +1,25 @@
-# Module 7 Examples
+# Module 7 — Hands-on labs
 
-Hands-on examples for **I²C protocol + RTL + basic testbench** (no UVM in this module).
+Generated from `docs/MODULE7.md` for slides, PDF, and video.
+Run commands from the **course repository root** unless noted.
 
----
+**Course topic:** I²C — Protocol + RTL + Basic Testbench
 
-## 1. I²C baseline (`examples/i2c_baseline/`)
+## 1. I²C baseline master (`i2c_baseline/`)
 
-Simple I²C master RTL with a **basic directed testbench**:
+**Source:** `module7/examples/i2c_baseline/`
 
-- Drives a single write transaction (START → address+W → data → STOP)
-- Includes a simple bus monitor that samples SDA on SCL rising edges to reconstruct bytes
-- No UVM
+**What you'll learn:**
+- I²C master FSM: START → address+W → data → STOP
+- Inline bus monitor sampling SDA on rising SCL
+- Comparing reconstructed address and data bytes to stimulus
 
-**Run it** (from repo root):
-
-```bash
-cd module7/examples/i2c_baseline
-make run
-```
-
-Or use the module script:
+**Run:**
 
 ```bash
-./scripts/module7.sh --run
+cd module7/examples/i2c_baseline && make run
 ```
 
-**Contents**:
+**You should see:** I2C baseline test PASS
 
-- `dut/`: `i2c_master.v`, `clk_div.v`
-- `top_i2c_baseline.sv`: Top with clk_div + i2c_master; directed stimulus and self-check in initial blocks.
-- `sim_main.cpp`: C++ harness (clock, reset); simulation runs until `$finish`.
-
-See [examples/i2c_baseline/README.md](examples/i2c_baseline/README.md) for layout and requirements.
-
----
-
-## 2. (Reference) I²C UVM
-
-Full I²C UVM verification (agent, sequences, driver, monitor, scoreboard) is in **Module 8** (`module8/examples/i2c_uvm/`). Module 7 focuses on protocol + RTL + basic TB only.
-
+**Go deeper:** Read the full walkthrough in `docs/MODULE7.md` and explore `module7/examples/i2c_baseline/`.

@@ -1,36 +1,25 @@
-# Module 3 Examples
+# Module 3 — Hands-on labs
 
-Hands-on examples for **UART protocol + RTL + basic testbench** (no UVM in this module).
+Generated from `docs/MODULE3.md` for slides, PDF, and video.
+Run commands from the **course repository root** unless noted.
 
----
+**Course topic:** UART — Protocol + RTL + Basic Testbench
 
-## 1. UART baseline (`examples/uart_baseline/`)
+## 1. UART baseline loopback (`uart_baseline/`)
 
-UART TX/RX RTL with a **basic directed testbench**: loopback (TX output → RX input), send a few bytes, check they are received correctly.
+**Source:** `module3/examples/uart_baseline/`
 
-**Run it** (from repo root):
+**What you'll learn:**
+- UART 8N1 TX/RX RTL with shared `baud_gen`
+- Loopback wiring (`rx = tx`) and directed bytes 0x55 / 0xAA
+- Baseline self-check without UVM (wait for `data_valid`, compare `data_out`)
+
+**Run:**
 
 ```bash
-cd module3/examples/uart_baseline
-make run
+cd module3/examples/uart_baseline && make run
 ```
 
-Or use the module script:
+**You should see:** UART baseline test PASS
 
-```bash
-./scripts/module3.sh --run
-```
-
-**Contents**:
-
-- `dut/`: `uart_tx.v`, `uart_rx.v`, `baud_gen.v`
-- `top_uart_baseline.sv`: Top with loopback; directed stimulus and checks in initial blocks.
-- `sim_main.cpp`: C++ harness (clock, reset); simulation runs until `$finish`.
-
-See [examples/uart_baseline/README.md](examples/uart_baseline/README.md) for layout and requirements.
-
----
-
-## 2. (Reference) UART UVM
-
-Full UART UVM verification (agent, sequences, driver, monitor, scoreboard) is in **Module 4** (`module4/examples/uart_uvm/`). Module 3 focuses on protocol + RTL + basic TB only.
+**Go deeper:** Read the full walkthrough in `docs/MODULE3.md` and explore `module3/examples/uart_baseline/`.

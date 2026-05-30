@@ -34,21 +34,33 @@ def _truncate_bullet(text: str, limit: int = MAX_BULLET_CHARS) -> str:
 
 def _truncate_slide_bullets(slide: dict[str, Any]) -> bool:
     """Return True if any bullet was shortened."""
-    bullets = slide.get("bullets")
-    if not isinstance(bullets, list):
-        return False
     changed = False
-    new_bullets: list[Any] = []
-    for b in bullets:
-        if isinstance(b, str):
-            t = _truncate_bullet(b)
-            new_bullets.append(t)
-            if t != b:
-                changed = True
-        else:
-            new_bullets.append(b)
-    if changed:
-        slide["bullets"] = new_bullets
+    bullets = slide.get("bullets")
+    if isinstance(bullets, list):
+        new_bullets: list[Any] = []
+        for b in bullets:
+            if isinstance(b, str):
+                t = _truncate_bullet(b)
+                new_bullets.append(t)
+                if t != b:
+                    changed = True
+            else:
+                new_bullets.append(b)
+        if changed:
+            slide["bullets"] = new_bullets
+    left = slide.get("left")
+    if isinstance(left, list):
+        new_left: list[Any] = []
+        for item in left:
+            if isinstance(item, str):
+                t = _truncate_bullet(item)
+                new_left.append(t)
+                if t != item:
+                    changed = True
+            else:
+                new_left.append(item)
+        if changed:
+            slide["left"] = new_left
     return changed
 
 
@@ -107,6 +119,8 @@ def patch_outline(data: dict[str, Any], module: int) -> bool:
                 slide["notes"] = notes.replace("examples/examples/", "examples/")
                 changed = True
         if slide.get("type") == "bullets" and _truncate_slide_bullets(slide):
+            changed = True
+        if slide.get("type") == "two_column" and _truncate_slide_bullets(slide):
             changed = True
         new_slides.append(slide)
 

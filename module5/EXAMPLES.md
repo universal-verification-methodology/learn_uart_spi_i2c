@@ -1,36 +1,25 @@
-# Module 5 Examples
+# Module 5 — Hands-on labs
 
-Hands-on examples for **SPI protocol + RTL + basic testbench** (no UVM in this module).
+Generated from `docs/MODULE5.md` for slides, PDF, and video.
+Run commands from the **course repository root** unless noted.
 
----
+**Course topic:** SPI — Protocol + RTL + Basic Testbench
 
-## 1. SPI baseline (`examples/spi_baseline/`)
+## 1. SPI baseline master (`spi_baseline/`)
 
-SPI master RTL with a **basic directed testbench**: clk_div + spi_master; directed transfers (e.g. 0x55, 0xAA); wait for done; no UVM.
+**Source:** `module5/examples/spi_baseline/`
 
-**Run it** (from repo root):
+**What you'll learn:**
+- SPI Mode 0 master RTL (`spi_master` + `clk_div`)
+- Directed writes 0x55 and 0xAA with `start` / `wait(done)`
+- Observing SCLK, MOSI, and CS_N timing in simulation (optional VCD)
+
+**Run:**
 
 ```bash
-cd module5/examples/spi_baseline
-make run
+cd module5/examples/spi_baseline && make run
 ```
 
-Or use the module script:
+**You should see:** SPI baseline test PASS
 
-```bash
-./scripts/module5.sh --run
-```
-
-**Contents**:
-
-- `dut/`: `spi_master.v`, `clk_div.v`
-- `top_spi_baseline.sv`: Top with clk_div, spi_master; directed stimulus and checks in initial blocks.
-- `sim_main.cpp`: C++ harness (clock, reset); simulation runs until `$finish`.
-
-See [examples/spi_baseline/README.md](examples/spi_baseline/README.md) for layout and requirements.
-
----
-
-## 2. (Reference) SPI UVM
-
-Full SPI UVM verification (agent, sequences, driver, monitor, scoreboard) is in **Module 6** (`module6/examples/spi_uvm/`). Module 5 focuses on protocol + RTL + basic TB only.
+**Go deeper:** Read the full walkthrough in `docs/MODULE5.md` and explore `module5/examples/spi_baseline/`.

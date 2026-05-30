@@ -98,6 +98,38 @@ Module 5 is the second **protocol** module (after UART):
 
 ---
 
+## Key files to study
+
+- `module5/examples/spi_baseline/dut/spi_master.v` — Mode 0 master
+- `module5/examples/spi_baseline/dut/clk_div.v` — `clk_div_tick`
+- `module5/examples/spi_baseline/top_spi_baseline.sv` — directed test
+- `docs/SPI_LEARNING_GUIDE.md` — protocol reference
+
+## Key Concepts
+
+### 1. Synchronous serial (SPI)
+
+- `sclk` defines bit times; unlike UART there is an explicit clock line.
+- Mode 0: idle low, sample MOSI on rising edge, change on falling edge.
+
+### 2. Chip select frames
+
+- `cs_n` low defines one transfer; typically 8 SCLK cycles per byte.
+
+## Common Pitfalls
+
+1. **Wrong SPI mode in head**
+   - **Mistake**: Sampling on falling edge when using Mode 0.
+   - **Correct**: Rising edge capture, falling edge change for CPOL=0, CPHA=0.
+   - **Why**: Bits will be shifted and MSB/LSB order will look wrong.
+
+2. **Trusting `done` only**
+   - **Mistake**: No waveform or bus check on MOSI/SCLK.
+   - **Correct**: Optional VCD review or Module 6 monitor-based check.
+   - **Why**: `done` only means the FSM finished, not that bits were correct.
+
+---
+
 ## Topics Covered
 
 ### 1. SPI Protocol (Mode 0)
@@ -114,6 +146,19 @@ Module 5 is the second **protocol** module (after UART):
 ---
 
 ## Example: spi_baseline
+
+#### Example 5.1: SPI baseline master (`module5/examples/spi_baseline/`)
+
+**What it demonstrates:**
+
+- SPI Mode 0 master RTL (`spi_master` + `clk_div`)
+- Directed writes 0x55 and 0xAA with `start` / `wait(done)`
+- Observing SCLK, MOSI, and CS_N timing in simulation (optional VCD)
+
+```bash
+cd module5/examples/spi_baseline
+make run
+```
 
 | Component | Role |
 |-----------|------|

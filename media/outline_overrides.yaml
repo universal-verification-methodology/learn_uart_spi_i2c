@@ -1,49 +1,171 @@
-# Per-module demo overrides for generate_outline_from_module.py
-# Keys under demos: example folder from EXAMPLES.md backtick path (e.g. examples/spec_to_rtl).
+# Per-module overrides for generate_outline_from_module.py
+# demos: capture command / expect for terminal screenshots
+# architecture: optional code slides (rtl_code, test_code, env_code, make_code) after design section
 
 module1:
+  architecture:
+    rtl_code:
+      title: "counter.v — spec in RTL"
+      source_file: module1/examples/spec_to_rtl/dut/counter.v
+      max_lines: 22
+    test_code:
+      title: "sim_main.cpp — directed check"
+      source_file: module1/examples/spec_to_rtl/sim_main.cpp
+      max_lines: 18
+    make_code:
+      title: "Makefile — Verilator build & run"
+      source_file: module1/examples/spec_to_rtl/Makefile
+      max_lines: 16
   demos:
     examples/spec_to_rtl:
       command: "cd module1/examples/spec_to_rtl && make run"
       expect: "[PASS] spec_to_rtl"
 
 module2:
+  architecture:
+    env_code:
+      title: "RegTransaction — UVM item"
+      source_file: module2/examples/uvm_smoke/test_uvm_smoke.sv
+      start_line: 1
+      max_lines: 45
+    make_code:
+      title: "Makefile — UVM + Verilator"
+      source_file: module2/examples/uvm_smoke/Makefile
+      max_lines: 18
   demos:
     examples/uvm_smoke:
       command: "./scripts/module2.sh --run"
       expect: "SCOREBOARD"
 
 module3:
+  architecture:
+    rtl_code:
+      title: "uart_tx — 8N1 frame FSM"
+      source_file: module3/examples/uart_baseline/dut/uart_tx.v
+      max_lines: 28
+    design_code:
+      title: "baud_gen — divider → baud_tick"
+      source_file: module3/examples/uart_baseline/dut/baud_gen.v
+      max_lines: 20
+    tb_code:
+      title: "uart_rx — start detect & sample"
+      source_file: module3/examples/uart_baseline/dut/uart_rx.v
+      max_lines: 28
+    test_code:
+      title: "Loopback directed test"
+      source_file: module3/examples/uart_baseline/top_uart_baseline.sv
+      start_line: 48
+      max_lines: 22
+    make_code:
+      title: "Makefile — uart_baseline run"
+      source_file: module3/examples/uart_baseline/Makefile
+      max_lines: 16
   demos:
     examples/uart_baseline:
       command: "./scripts/module3.sh --run"
       expect: "UART baseline test PASS"
 
 module4:
+  architecture:
+    env_code:
+      title: "UartTxTransaction & agent"
+      source_file: module4/examples/uart_uvm/test_uart_uvm.sv
+      start_line: 1
+      max_lines: 55
+    tb_code:
+      title: "UartTxDriver — bit timing"
+      source_file: module4/examples/uart_uvm/test_uart_uvm.sv
+      start_line: 80
+      max_lines: 28
+    test_code:
+      title: "Scoreboard — TX/RX check"
+      source_file: module4/examples/uart_uvm/test_uart_uvm.sv
+      start_line: 200
+      max_lines: 25
+    make_code:
+      title: "Makefile — UVM UART sim"
+      source_file: module4/examples/uart_uvm/Makefile
+      max_lines: 18
   demos:
     examples/uart_uvm:
       command: "./scripts/module4.sh --run"
       expect: "SCOREBOARD"
 
 module5:
+  architecture:
+    rtl_code:
+      title: "spi_master — Mode 0 shift"
+      source_file: module5/examples/spi_baseline/dut/spi_master.v
+      max_lines: 28
+    design_code:
+      title: "clk_div — SPI clock"
+      source_file: module5/examples/spi_baseline/dut/clk_div.v
+      max_lines: 18
+    test_code:
+      title: "Directed SPI test"
+      source_file: module5/examples/spi_baseline/top_spi_baseline.sv
+      start_line: 40
+      max_lines: 22
+    make_code:
+      title: "Makefile — spi_baseline run"
+      source_file: module5/examples/spi_baseline/Makefile
+      max_lines: 16
   demos:
     examples/spi_baseline:
       command: "./scripts/module5.sh --run"
       expect: "SPI baseline test PASS"
 
 module6:
+  architecture:
+    env_code:
+      title: "SpiTransaction & agent"
+      source_file: module6/examples/spi_uvm/test_spi_uvm.sv
+      start_line: 1
+      max_lines: 55
+    make_code:
+      title: "Makefile — UVM SPI sim"
+      source_file: module6/examples/spi_uvm/Makefile
+      max_lines: 18
   demos:
     examples/spi_uvm:
       command: "./scripts/module6.sh --run"
       expect: "SCOREBOARD"
 
 module7:
+  architecture:
+    rtl_code:
+      title: "i2c_master FSM"
+      source_file: module7/examples/i2c_baseline/dut/i2c_master.v
+      max_lines: 30
+    design_code:
+      title: "clk_div — SCL timing"
+      source_file: module7/examples/i2c_baseline/dut/clk_div.v
+      max_lines: 18
+    test_code:
+      title: "Directed I2C test"
+      source_file: module7/examples/i2c_baseline/top_i2c_baseline.sv
+      start_line: 35
+      max_lines: 22
+    make_code:
+      title: "Makefile — i2c_baseline run"
+      source_file: module7/examples/i2c_baseline/Makefile
+      max_lines: 16
   demos:
     examples/i2c_baseline:
       command: "./scripts/module7.sh --run"
       expect: "I2C baseline test PASS"
 
 module8:
+  architecture:
+    env_code:
+      title: "I2cTransaction & agent"
+      source_file: module8/examples/i2c_uvm/test_i2c_uvm.sv
+      start_line: 1
+      max_lines: 55
+    make_code:
+      title: "Makefile — UVM I2C sim"
+      source_file: module8/examples/i2c_uvm/Makefile
+      max_lines: 18
   demos:
     examples/i2c_uvm:
       command: "./scripts/module8.sh --run"
